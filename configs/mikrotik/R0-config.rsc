@@ -18,5 +18,5 @@ add interface=ether1
 /ip route
 add dst-address=10.8.0.228/30 gateway=10.8.0.226
 add dst-address=10.8.0.232/30 gateway=10.8.0.226
-add dst-address=10.1.3.0/25 gateway=10.8.0.226
-add dst-address=10.1.3.128/25 gateway=10.8.0.226
+add dst-address=10.8.3.0/25 gateway=10.8.0.226
+add dst-address=10.8.3.128/25 gateway=10.8.0.226

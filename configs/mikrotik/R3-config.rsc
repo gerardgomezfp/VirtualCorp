@@ -13,8 +13,8 @@ set [ find default-name=ether8 ] disable-running-check=no
 /routing rip instance
 add name=rip1 redistribute=connected,rip
 /ip address
-add address=10.1.3.1/25 interface=ether3 network=10.1.3.0
-add address=10.1.3.129/25 interface=ether4 network=10.1.3.128
+add address=10.8.3.1/25 interface=ether3 network=10.8.3.0
+add address=10.8.3.129/25 interface=ether4 network=10.8.3.128
 add address=10.8.0.234/30 comment="Enlace R2-R3" interface=ether2 network=\
     10.8.0.232
 /ip dhcp-client

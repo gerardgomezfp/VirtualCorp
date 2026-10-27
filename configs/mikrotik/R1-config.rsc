@@ -19,5 +19,5 @@ add address=10.8.0.229/30 comment="Enlace R1-R2" interface=ether3 network=\
 add interface=ether1
 /ip route
 add dst-address=10.8.0.232/30 gateway=10.8.0.230
-add dst-address=10.1.3.0/25 gateway=10.8.0.230
-add dst-address=10.1.3.128/25 gateway=10.8.0.230
+add dst-address=10.8.3.0/25 gateway=10.8.0.230
+add dst-address=10.8.3.128/25 gateway=10.8.0.230
