@@ -70,7 +70,7 @@ create_router_template() {
     "$VBOXMANAGE_BIN" modifyvm "$VM_NAME" \
         --groups "$VM_ROUTERS_GROUP"
 
-    
+
 
     # NIC2..NICN = Internal Network
     #
@@ -162,6 +162,13 @@ EOF
         "$SSH_PUBLIC_KEY_DIR/vcorp_sysadmin.pub" \
         admin@127.0.0.1:sysadmin.pub
 
+    scp \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -P "$SSH_PORT" \
+        "$AUDIT_PUB_KEY_FILE" \
+        admin@127.0.0.1:vcorp_auditor.pub
+
     ssh \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
@@ -169,6 +176,7 @@ EOF
         admin@127.0.0.1 <<EOF
 
 /user ssh-keys import user=sysadmin public-key-file=sysadmin.pub
+/user ssh-keys import user=sysadmin public-key-file=vcorp_auditor.pub
 
 EOF
 
@@ -530,6 +538,13 @@ EOF
         admin@127.0.0.1:sysadmin.pub \
         || return 1
 
+    scp \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -P "$ssh_port" \
+        "$AUDIT_PUB_KEY_FILE" \
+        admin@127.0.0.1:vcorp_auditor.pub \
+        || return 1
 
     ssh \
         -o StrictHostKeyChecking=no \
@@ -538,6 +553,7 @@ EOF
         admin@127.0.0.1 <<'EOF'
 
 /user ssh-keys import user=sysadmin public-key-file=sysadmin.pub
+/user ssh-keys import user=sysadmin public-key-file=vcorp_auditor.pub
 
 EOF
 
