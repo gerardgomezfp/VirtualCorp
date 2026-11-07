@@ -1,4 +1,4 @@
-# 2026-10-26 13:21:27 by RouterOS 7.21.4
+# 2026-11-07 16:02:05 by RouterOS 7.21.4
 # system id = G+ec/NUdUPO
 #
 /interface ethernet
@@ -10,13 +10,17 @@ set [ find default-name=ether5 ] disable-running-check=no
 set [ find default-name=ether6 ] disable-running-check=no
 set [ find default-name=ether7 ] disable-running-check=no
 set [ find default-name=ether8 ] disable-running-check=no
+/routing rip instance
+add name=rip1 redistribute=connected,rip
 /ip address
 add address=10.8.0.225/30 comment="Enlace R0-R1" interface=ether2 network=\
     10.8.0.224
+add address=10.8.0.193/27 comment=DMZ interface=ether3 network=10.8.0.192
+add address=10.8.0.129/26 comment="Xarxa privada" interface=ether4 network=\
+    10.8.0.128
+add address=10.8.0.1/25 comment="Planta baixa" interface=ether5 network=\
+    10.8.0.0
 /ip dhcp-client
 add interface=ether1
-/ip route
-add dst-address=10.8.0.228/30 gateway=10.8.0.226
-add dst-address=10.8.0.232/30 gateway=10.8.0.226
-add dst-address=10.8.3.0/25 gateway=10.8.0.226
-add dst-address=10.8.3.128/25 gateway=10.8.0.226
+/routing rip interface-template
+add disabled=no instance=rip1 interfaces=ether2
