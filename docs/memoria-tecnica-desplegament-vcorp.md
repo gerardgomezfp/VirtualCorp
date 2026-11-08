@@ -76,6 +76,9 @@ Antes de iniciar cualquier operación, el script valida la existencia de la carp
 
 ### 3.2. Inventario Detallado y Plan de Direccionamiento de la Delegación 8
 
+- 📄 **[Documentació de Topologia i Connexió (PDF)](./assets/Vcorp%20Connexi%C3%B3%20amb%20M0375%20ASIX.pdf)**
+
+
 A continuación se detalla la correspondencia completa de cada máquina, su red asignada, dirección IP, máscara/prefijo y puerta de enlace (*gateway*):
 
 | Máquina | Tipo | Red VirtualBox | Dirección IP | Prefijo | Gateway | 
