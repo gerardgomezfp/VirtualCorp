@@ -4,6 +4,15 @@ VirtualCorp is a virtual networking lab for designing and deploying a branch off
 
 Read the [full project statement](docs/statement.html) for the scenario, requirements, and detailed assignment.
 
+## 📚 Documentació de les Activitats
+
+Pots consultar les memòries tècniques i el desenvolupament complet de cada fase del projecte:
+
+* **Exercici 1:** [Configuració i Desplegament de MikroTiks](./docs/exercicil-mikrotiks.md)
+* **Exercici 2:** [Memòria Tècnica de Desplegament (Delegació 8)](./docs/memoria-tecnica-desplegament-vcorp.md)
+
+---
+
 ## Getting started
 
 ### 1. Install prerequisites
@@ -16,42 +25,3 @@ From the project root, create the local Make configuration and edit it for your 
 
 ```bash
 cp .env.example .env
-```
-
-Update paths such as `PROJECT_ROOT`, `ARTIFACTS_DIR`, `CONFIGS_DIR`, and the SSH key directories as needed. The `.env` file uses GNU Make assignments and is ignored by Git.
-
-### 3. Create the routers
-
-Run `make` to display the available targets. Generate the SSH keys, then deploy the routers:
-
-```bash
-make ssh-keys
-make deploy-routers
-```
-
-The deployment downloads the RouterOS CHR disk image when it is missing and creates `mikrotik0` through `mikrotik3` in VirtualBox.
-
-### 4. Check the lab
-
-Confirm that all four VMs appear in VirtualBox, under the `/VirtualCorp/Routers` group. Open each router's console and check that it can reach the other routers' transit addresses:
-
-| Router | Transit address |
-| --- | --- |
-| `mikrotik0` | `10.8.0.225` |
-| `mikrotik1` | `10.8.0.226` |
-| `mikrotik2` | `10.8.0.230` |
-| `mikrotik3` | `10.8.0.234` |
-
-From each router, ping the other three addresses. For example:
-
-```text
-ping 10.8.0.226 count=4
-```
-
-Then check internet connectivity from each router:
-
-```text
-ping 1.1.1.1 count=4
-```
-
-The lab is ready when all four routers can reach one another and each can reach the internet.
