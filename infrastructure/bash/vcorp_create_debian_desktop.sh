@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 # ============================================================
@@ -6,8 +5,8 @@
 # Entorn: Debian natiu + VirtualBox
 #
 # Crea un template Debian Desktop amb LXQt i Falkon.
-# La ISO de Debian es descarrega automaticament d'Internet.
-# Les ISO es guarden al directori isos/ del projecte.
+# La ISO de Debian es descarrega al directori temporal i s'elimina
+# en finalitzar amb exit (no es guarda res a isos/).
 # En cas d'exit, els fitxers temporals s'eliminen.
 # En cas d'error, es conserven a /tmp per facilitar el diagnostic.
 # La maquina virtual i el seu disc no s'eliminen automaticament.
@@ -30,10 +29,8 @@ debian_iso_filename="debian-${debian_version}-${debian_arch}-netinst.iso"
 
 debian_iso_url="https://cdimage.debian.org/debian-cd/${debian_version}/${debian_arch}/iso-cd/${debian_iso_filename}"
 
-PROJECT_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
-ISO_DIR="${PROJECT_ROOT}/isos"
-
-debian_iso_path="${DEBIAN_ISO_PATH:-${ISO_DIR}/${debian_iso_filename}}"
+# Definim la ruta de la ISO perquè apunti al directori temporal (esborrable)
+debian_iso_path="${DEBIAN_ISO_PATH:-}"
 
 # ============================================================
 # CONFIGURACIO DE LES PLANTILLES
@@ -69,7 +66,7 @@ cleanup() {
 
     if [[ -n "${download_folder:-}" && -d "$download_folder" ]]; then
         if [[ "$deployment_success" == true && $result -eq 0 ]]; then
-            log_info "Eliminant fitxers temporals..."
+            log_info "Eliminant fitxers temporals i la ISO de Debian..."
             rm -rf -- "$download_folder"
         else
             log_warn "La instal·lacio no ha acabat correctament. Es conserven els fitxers temporals per diagnosticar l'error:"
@@ -141,8 +138,6 @@ check_prerequisites() {
         return 1
     fi
 
-    mkdir -p "$ISO_DIR"
-
     download_folder="$(mktemp -d "${TMPDIR:-/tmp}/vcorp-debian.XXXXXX")"
     chmod 700 "$download_folder"
 
@@ -150,18 +145,18 @@ check_prerequisites() {
 }
 
 # ============================================================
-# DESCARREGA I VALIDACIO DE LA ISO DEBIAN
+# DESCARREGA I VALIDACIO DE LA ISO DEBIAN (TEMPORAL)
 # ============================================================
 
 deb_prepare_iso() {
-
-    mkdir -p "$ISO_DIR"
+    if [[ -z "${debian_iso_path:-}" ]]; then
+        debian_iso_path="${download_folder}/${debian_iso_filename}"
+    fi
 
     if [[ -s "$debian_iso_path" ]]; then
-        log_info "ISO Debian existent: ${debian_iso_path}"
-        log_info "Es reutilitzara la ISO existent."
+        log_info "ISO Debian existent al directori temporal: ${debian_iso_path}"
     else
-        log_info "Descarregant Debian ${debian_version}..."
+        log_info "Descarregant Debian ${debian_version} al directori temporal..."
         log_info "URL: ${debian_iso_url}"
 
         if ! wget -c -O "${debian_iso_path}.part" "$debian_iso_url"; then
@@ -178,7 +173,7 @@ deb_prepare_iso() {
 
         mv -- "${debian_iso_path}.part" "$debian_iso_path"
 
-        log_ok "ISO Debian descarregada correctament."
+        log_ok "ISO Debian descarregada correctament al directori temporal."
     fi
 
     log_info "Verificant el format de la ISO..."
@@ -438,7 +433,7 @@ wait_for_poweroff() {
 
     while true; do
         state="$("$VBOXMANAGE_BIN" showvminfo "$vm_name" --machinereadable \
-            | sed -n 's/^VMState="\([^"]*\)".*/\1/p')"
+            | sed -n 's/^VMState="\([^"]*\)"(.*/\1/p')"
 
         case "$state" in
             poweroff)
@@ -552,7 +547,7 @@ main() {
     deployment_success=true
 
     log_ok "La plantilla Debian Desktop s'ha creat correctament."
-    log_info "Els fitxers temporals s'eliminaran; el disc i la maquina virtual es conservaran."
+    log_info "Els fitxers temporals i la ISO descarregada s'han eliminat; el disc i la maquina virtual es conserven."
 }
 
 main "$@"
