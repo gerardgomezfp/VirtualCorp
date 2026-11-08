@@ -1,5 +1,8 @@
 # Memoria Técnica y Documentación de Despliegue - Delegación 8 (VirtualCorp)
 
+Alumno: Gerard Gómez
+Curso: ASIX2 26-27
+
 Este documento recoge de manera exhaustiva el diseño, la implementación, el flujo de automatización y los procedimientos técnicos utilizados para el despliegue integral de la **Delegación 8 de VirtualCorp**. El proyecto se ha diseñado bajo los principios de Infraestructura como Código (IaC), garantizando la reproducibilidad, la robustez mediante la idempotencia y el cumplimiento estricto de los requisitos de seguridad (acceso SSH automatizado y aislamiento de redes).
 
 ## Índice
