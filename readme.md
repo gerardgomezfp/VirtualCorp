@@ -8,7 +8,7 @@ Read the [full project statement](docs/statement.html) for the scenario, require
 
 Pots consultar les memòries tècniques i el desenvolupament complet de cada fase del projecte:
 
-* **Exercici 1:** [Configuració i Desplegament de MikroTiks](./docs/exercicil-mikrotiks.md)
+* **Exercici 1:** [Configuració i Desplegament de MikroTiks](./docs/exercici1-mikrotiks.md)
 * **Exercici 2:** [Memòria Tècnica de Desplegament (Delegació 8)](./docs/memoria-tecnica-desplegament-vcorp.md)
 
 ---
