@@ -12,16 +12,3 @@ Pots consultar les memòries tècniques i el desenvolupament complet de cada fas
 * **Exercici 2:** [Memòria Tècnica de Desplegament (Delegació 8)](./docs/memoria-tecnica-desplegament-vcorp.md)
 
 ---
-
-## Getting started
-
-### 1. Install prerequisites
-
-Install GNU Make, VirtualBox with `VBoxManage`, `curl`, `unzip`, and the OpenSSH client. Make sure hardware virtualization is enabled on the host.
-
-### 2. Adapt the environment
-
-From the project root, create the local Make configuration and edit it for your machine:
-
-```bash
-cp .env.example .env
