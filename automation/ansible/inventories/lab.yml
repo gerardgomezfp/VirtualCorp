@@ -1,0 +1,12 @@
+all:
+  children:
+    vbox:
+      hosts:
+        localhost:
+          ansible_connection: local
+          vboxmanage_bin: VBoxManage
+          mikrotik_routers:
+            - mikrotik0
+            - mikrotik1
+            - mikrotik2
+            - mikrotik3
