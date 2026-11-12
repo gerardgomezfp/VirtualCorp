@@ -1,0 +1,30 @@
+
+---
+# Configuració del client WireGuard
+
+wireguard_client_directory: "{{ playbook_dir }}/../../../artifacts/vpn"
+
+wireguard_client_private_key_file: "{{ wireguard_client_directory }}/vcorp_client_private.key"
+wireguard_client_public_key_file: "{{ wireguard_client_directory }}/vcorp_client_public.key"
+wireguard_client_config_file: "{{ wireguard_client_directory }}/vcorp-client.conf"
+
+# Adreçament del túnel
+wireguard_client_address: 10.8.10.2/32
+wireguard_tunnel_network: 10.8.10.0/24
+
+# Servidor WireGuard: mikrotik0
+wireguard_server_public_key: "AVPx3R28tZbC9Q+ftFePOMSbQ4fpLLOgwsw+RVFcpwY="
+wireguard_server_endpoint: "127.0.0.1:51820"
+
+# Xarxes VirtualCorp autoritzades
+wireguard_allowed_networks:
+  - 10.8.0.0/25
+  - 10.8.0.128/26
+  - 10.8.0.192/27
+  - 10.8.0.224/30
+  - 10.8.1.0/24
+  - 10.8.2.0/24
+  - 10.8.3.0/25
+  - 10.8.3.128/25
+
+wireguard_persistent_keepalive: 25

@@ -1,0 +1,7 @@
+---
+- name: Configurar servidor WireGuard en mikrotik0
+  hosts: mikrotik
+  gather_facts: false
+
+  roles:
+    - wireguard_server

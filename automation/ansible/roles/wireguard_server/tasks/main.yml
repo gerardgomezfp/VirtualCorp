@@ -1,0 +1,108 @@
+
+---
+- name: Comprovar si existeix la interfície WireGuard
+  community.routeros.command:
+    commands:
+      - ':put [/interface wireguard find where name="{{ wireguard_interface }}"]'
+  register: wireguard_interface_check
+  changed_when: false
+
+- name: Crear la interfície WireGuard si no existeix
+  community.routeros.command:
+    commands:
+      - '/interface wireguard add name={{ wireguard_interface }} listen-port={{ wireguard_port }}'
+  when: wireguard_interface_check.stdout[0] | trim == ""
+
+- name: Comprovar si existeix l'adreça IP de WireGuard
+  community.routeros.command:
+    commands:
+    - '/ip address print where interface={{ wireguard_interface }}'
+  register: wireguard_address_check
+  changed_when: false
+
+- name: Assignar l'adreça IP si no existeix
+  community.routeros.command:
+    commands:
+      - '/ip address add address={{ wireguard_server_address }} interface={{ wireguard_interface }} comment="WireGuard VirtualCorp"'
+  when: wireguard_address_check.stdout[0] | trim == ""
+
+
+- name: Comprovar si existeix el peer WireGuard de Debian
+  community.routeros.command:
+    commands:
+      - '/interface wireguard peers print where comment="{{ wireguard_peer_name }}"'
+  register: wireguard_peer_check
+  changed_when: false
+
+- name: Crear peer WireGuard para Debian
+  community.routeros.command:
+    commands:
+      - '/interface wireguard peers add interface={{ wireguard_interface }} public-key="{{ wireguard_client_public_key }}" allowed-address={{ wireguard_client_address }} comment="{{ wireguard_peer_name }}"'
+  when: wireguard_peer_check.stdout[0] | trim == ""
+
+- name: Comprovar si existeix la regla d'entrada de WireGuard
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter print count-only where comment="WireGuard VPN input"'
+  register: wireguard_firewall_input_check
+  changed_when: false
+  
+
+- name: Permetre connexions WireGuard des de ether1
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter add chain=input action=accept protocol=udp dst-port={{ wireguard_port }} in-interface=ether1 comment="WireGuard VPN input"'
+  when: (wireguard_firewall_input_check.stdout[0] | trim | regex_search('0$')) is not none
+
+
+- name: Comprobar si existe la regla de tráfico establecido
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter print count-only where comment="WireGuard established"'
+  register: wireguard_established_check
+  changed_when: false
+
+- name: Permitir tráfico establecido y relacionado
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter add chain=forward action=accept connection-state=established,related comment="WireGuard established"'
+  when: (wireguard_established_check.stdout[0] | trim | regex_search('0$')) is not none
+
+
+
+
+- name: Comprobar las reglas de acceso VPN a las redes internas
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter print count-only where comment="WireGuard LAN {{ item.name }}"'
+  loop:
+    - { name: "planta baja", network: "10.8.0.0/25" }
+    - { name: "red privada", network: "10.8.0.128/26" }
+    - { name: "DMZ", network: "10.8.0.192/27" }
+    - { name: "enlace R0-R1", network: "10.8.0.224/30" }
+    - { name: "planta 1", network: "10.8.1.0/24" }
+    - { name: "planta 2", network: "10.8.2.0/24" }
+    - { name: "planta 3", network: "10.8.3.0/25" }
+    - { name: "direccion", network: "10.8.3.128/25" }
+  register: wireguard_lan_checks
+  changed_when: false
+
+- name: Permitir acceso VPN a las redes internas autorizadas
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter add chain=forward action=accept in-interface=wg-vcorp src-address=10.8.10.2/32 dst-address={{ item.item.network }} comment="WireGuard LAN {{ item.item.name }}"'
+  loop: "{{ wireguard_lan_checks.results }}"
+  when: (item.stdout[0] | trim | regex_search('0$')) is not none
+
+- name: Comprobar si existe la regla de bloqueo del resto del tráfico VPN
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter print count-only where comment="WireGuard VPN deny other"'
+  register: wireguard_deny_check
+  changed_when: false
+
+- name: Bloquear el resto del tráfico iniciado desde WireGuard
+  community.routeros.command:
+    commands:
+      - '/ip firewall filter add chain=forward action=drop in-interface=wg-vcorp src-address=10.8.10.2/32 comment="WireGuard VPN deny other"'
+  when: (wireguard_deny_check.stdout[0] | trim | regex_search('0$')) is not none
