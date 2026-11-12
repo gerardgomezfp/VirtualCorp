@@ -1,0 +1,66 @@
+---
+- name: Comprovar si el directori d'artifectes VPN existeix
+  ansible.builtin.stat:
+    path: "{{ wireguard_client_directory }}"
+  register: vpn_dir_stat
+  delegate_to: localhost
+
+- name: Crear el directori d'artifectes VPN si no existeix
+  ansible.builtin.file:
+    path: "{{ wireguard_client_directory }}"
+    state: directory
+    mode: '0700'
+  when: not vpn_dir_stat.stat.exists
+  delegate_to: localhost
+
+- name: Comprovar si existeix la clau privada del client
+  ansible.builtin.stat:
+    path: "{{ wireguard_client_private_key_file }}"
+  register: client_private_key_stat
+  delegate_to: localhost
+
+- name: Generar la clau privada del client si no existeix
+  ansible.builtin.shell: |
+    wg genkey > "{{ wireguard_client_private_key_file }}"
+    chmod 600 "{{ wireguard_client_private_key_file }}"
+  when: not client_private_key_stat.stat.exists
+  delegate_to: localhost
+
+- name: Comprovar si existeix la clau pública del client
+  ansible.builtin.stat:
+    path: "{{ wireguard_client_public_key_file }}"
+  register: client_public_key_stat
+  delegate_to: localhost
+
+- name: Generar la clau pública del client a partir de la privada si no existeix
+  ansible.builtin.shell: |
+    wg pubkey < "{{ wireguard_client_private_key_file }}" > "{{ wireguard_client_public_key_file }}"
+    chmod 600 "{{ wireguard_client_public_key_file }}"
+  when: not client_public_key_stat.stat.exists
+  delegate_to: localhost
+
+- name: Llegir la clau privada del client per a la plantilla
+  ansible.builtin.slurp:
+    src: "{{ wireguard_client_private_key_file }}"
+  register: client_private_key_raw
+  delegate_to: localhost
+  no_log: true
+
+- name: Establir la variable amb el contingut de la clau privada
+  ansible.builtin.set_fact:
+    client_private_key_content: "{{ client_private_key_raw['content'] | b64decode | trim }}"
+
+- name: Comprovar si existeix el fitxer de configuració del client
+  ansible.builtin.stat:
+    path: "{{ wireguard_client_config_file }}"
+  register: client_config_stat
+  delegate_to: localhost
+
+- name: Crear el fitxer de configuració del client WireGuard (vcorp-client.conf)
+  ansible.builtin.template:
+    src: vcorp-client.conf.j2
+    dest: "{{ wireguard_client_config_file }}"
+    mode: '0600'
+  when: not client_config_stat.stat.exists
+  delegate_to: localhost
+  no_log: true

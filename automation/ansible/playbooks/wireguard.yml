@@ -5,3 +5,9 @@
 
   roles:
     - wireguard_server
+
+- name: 2. Configurar client WireGuard a Debian (local)
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - wireguard_client
