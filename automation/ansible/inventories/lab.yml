@@ -1,3 +1,4 @@
+
 all:
   children:
     vbox:
@@ -10,3 +11,13 @@ all:
             - mikrotik1
             - mikrotik2
             - mikrotik3
+
+    mikrotik:
+      hosts:
+        mikrotik0:
+          ansible_host: mikrotik-vcorp
+          ansible_port: 2200
+          ansible_user: sysadmin
+          ansible_ssh_private_key_file: ~/.ssh/vcorp_sysadmin
+          ansible_connection: ansible.netcommon.network_cli
+          ansible_network_os: community.routeros.routeros
