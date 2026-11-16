@@ -12,6 +12,7 @@ all:
             - mikrotik2
             - mikrotik3
 
+#aqui definim com anisble podra entrar al router0 de vcorp, amb el seu port clau privada i usuari.
     mikrotik:
       hosts:
         mikrotik0:

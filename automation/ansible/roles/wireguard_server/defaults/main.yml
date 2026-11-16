@@ -1,7 +1,6 @@
 
 ---
-# Configuración del servidor WireGuard en mikrotik0
-
+# Configuracio del servidor WireGuard al mikrotik0
 wireguard_interface: wg-vcorp
 wireguard_port: 51820
 
@@ -10,7 +9,7 @@ wireguard_client_address: 10.8.10.2/32
 
 wireguard_tunnel_network: 10.8.10.0/24
 
-# Redes internas autorizadas para acceder desde la VPN
+# Xarxes internes autoritzades per accedir desde la VPN
 wireguard_allowed_networks:
   - 10.8.0.0/25
   - 10.8.0.128/26
@@ -21,7 +20,7 @@ wireguard_allowed_networks:
   - 10.8.3.0/25
   - 10.8.3.128/25
 
-# Clave pública del cliente Debian
+# Clau publica del client debian
 wireguard_client_public_key: "HvtSX8q7rjUmuMtibQJitGRUKbCe4PK2LV1XIF3Ru04="
-
+#nom del peer(el client)
 wireguard_peer_name: debian-client

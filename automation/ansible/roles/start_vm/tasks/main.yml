@@ -1,10 +1,11 @@
 ---
+# Comprobem si s'ha indicat la maquina virtual
 - name: Comprovar que s'ha indicat la màquina virtual
   ansible.builtin.assert:
     that:
       - vm_name | length > 0
     fail_msg: "Cal indicar vm_name."
-
+# Consultem l'estat de la maquina virtual
 - name: Consultar l'estat de la màquina virtual
   ansible.builtin.command:
     argv:
@@ -14,7 +15,7 @@
       - --machinereadable
   register: vm_info
   changed_when: false
-
+# Iniciem la maquina virtual si no esta en execucio
 - name: Iniciar la màquina si no està en execució
   ansible.builtin.command:
     argv:

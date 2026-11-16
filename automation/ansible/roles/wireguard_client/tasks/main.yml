@@ -1,10 +1,12 @@
 ---
+# Comprova si el directori local d'artefactes per a la VPN ja existeix
 - name: Comprovar si el directori d'artifectes VPN existeix
   ansible.builtin.stat:
     path: "{{ wireguard_client_directory }}"
   register: vpn_dir_stat
   delegate_to: localhost
 
+# Crea el directori d'artefactes amb permisos estrictes (0700) si no existeix
 - name: Crear el directori d'artifectes VPN si no existeix
   ansible.builtin.file:
     path: "{{ wireguard_client_directory }}"
@@ -13,12 +15,14 @@
   when: not vpn_dir_stat.stat.exists
   delegate_to: localhost
 
+# Comprova si el fitxer de la clau privada del client ja existeix localment
 - name: Comprovar si existeix la clau privada del client
   ansible.builtin.stat:
     path: "{{ wireguard_client_private_key_file }}"
   register: client_private_key_stat
   delegate_to: localhost
 
+# Genera la clau privada de WireGuard i li aplica permisos restrictius (600) si no existeix
 - name: Generar la clau privada del client si no existeix
   ansible.builtin.shell: |
     wg genkey > "{{ wireguard_client_private_key_file }}"
@@ -26,12 +30,14 @@
   when: not client_private_key_stat.stat.exists
   delegate_to: localhost
 
+# Comprova si el fitxer de la clau pública del client ja existeix
 - name: Comprovar si existeix la clau pública del client
   ansible.builtin.stat:
     path: "{{ wireguard_client_public_key_file }}"
   register: client_public_key_stat
   delegate_to: localhost
 
+# Deriva i genera la clau pública a partir de la clau privada si no existeix
 - name: Generar la clau pública del client a partir de la privada si no existeix
   ansible.builtin.shell: |
     wg pubkey < "{{ wireguard_client_private_key_file }}" > "{{ wireguard_client_public_key_file }}"
@@ -39,6 +45,7 @@
   when: not client_public_key_stat.stat.exists
   delegate_to: localhost
 
+# Llegeix el contingut de la clau privada en format binari/codificat per utilitzar-lo a la plantilla
 - name: Llegir la clau privada del client per a la plantilla
   ansible.builtin.slurp:
     src: "{{ wireguard_client_private_key_file }}"
@@ -46,16 +53,19 @@
   delegate_to: localhost
   no_log: true
 
+# Descodifica la clau privada i l'assigna a una variable neta per a la configuració
 - name: Establir la variable amb el contingut de la clau privada
   ansible.builtin.set_fact:
     client_private_key_content: "{{ client_private_key_raw['content'] | b64decode | trim }}"
 
+# Comprova si el fitxer final de configuració del client ja ha estat creat
 - name: Comprovar si existeix el fitxer de configuració del client
   ansible.builtin.stat:
     path: "{{ wireguard_client_config_file }}"
   register: client_config_stat
   delegate_to: localhost
 
+# Genera el fitxer de configuració definitiu (vcorp-client.conf) mitjançant la plantilla Jinja2
 - name: Crear el fitxer de configuració del client WireGuard (vcorp-client.conf)
   ansible.builtin.template:
     src: vcorp-client.conf.j2
