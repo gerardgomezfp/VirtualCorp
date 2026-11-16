@@ -1,0 +1,17 @@
+# Configuració de la interfície local del client (Debian)
+[Interface]
+# Clau privada del client injectada dinàmicament per Ansible
+PrivateKey = {{ client_private_key_content }}
+# Adreça IP assignada al client dins del túnel VPN
+Address = {{ wireguard_client_address }}
+
+# Configuració del node remot amb qui ens connectem (Servidor MikroTik)
+[Peer]
+# Clau pública del servidor VPN per verificar la identitat
+PublicKey = {{ wireguard_server_public_key }}
+# Adreça IP pública/externa i port d'escolta del servidor MikroTik
+Endpoint = {{ wireguard_server_endpoint }}
+# Subxarxes autoritzades que passaran pel túnel xifrat (Split Tunneling)
+AllowedIPs = {{ (wireguard_allowed_networks + [wireguard_tunnel_network]) | join(', ') }}
+# Interval en segons per enviar paquets de manteniment i evitar talls de NAT
+PersistentKeepalive = {{ wireguard_persistent_keepalive }}

@@ -1,0 +1,17 @@
+---
+#aquest es el playbook amb les tasques de /tasks/wireguard_server i client.
+- name: Configurar servidor WireGuard en mikrotik0
+  hosts: mikrotik
+  gather_facts: false
+#li asignem el rol de wireguard_server
+  roles:
+    - wireguard_server
+
+
+#amb aquesta segona linea de comandes 
+#diem que despres del servidor es configuri el client de wireguard al nostre ordinador
+- name: 2. Configurar client WireGuard a Debian (local)
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - wireguard_client

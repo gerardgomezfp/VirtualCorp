@@ -1,0 +1,42 @@
+---
+# Comprobem que s'ha indicat la maquina virtual
+- name: Comprovar que s'ha indicat la màquina virtual
+  ansible.builtin.assert:
+    that:
+      - vm_name | length > 0
+    fail_msg: "Cal indicar vm_name."
+# Consultem l'estat de la maquina virtual
+- name: Consultar l'estat de la màquina virtual
+  ansible.builtin.command:
+    argv:
+      - "{{ vboxmanage_bin }}"
+      - showvminfo
+      - "{{ vm_name }}"
+      - --machinereadable
+  register: vm_info
+  changed_when: false
+# Demanar l'aturada ordenada si està en execució
+- name: Demanar l'aturada ordenada si està en execució
+  ansible.builtin.command:
+    argv:
+      - "{{ vboxmanage_bin }}"
+      - controlvm
+      - "{{ vm_name }}"
+      - acpipowerbutton
+  when: "'VMState=\"running\"' in vm_info.stdout"
+  changed_when: true
+
+# Esperem a que la maquina quedi apagada
+- name: Esperar que la màquina quedi apagada
+  ansible.builtin.command:
+    argv:
+      - "{{ vboxmanage_bin }}"
+      - showvminfo
+      - "{{ vm_name }}"
+      - --machinereadable
+  register: vm_state
+  changed_when: false
+  until: "'VMState=\"poweroff\"' in vm_state.stdout"
+  retries: "{{ vm_shutdown_retries }}"
+  delay: "{{ vm_shutdown_delay }}"
+  when: "'VMState=\"running\"' in vm_info.stdout"
