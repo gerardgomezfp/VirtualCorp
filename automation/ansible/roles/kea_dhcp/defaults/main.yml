@@ -1,0 +1,111 @@
+---
+kea_package_name: "kea-dhcp4-server"
+kea_service_name: "kea-dhcp4-server"
+kea_config_path: "/etc/kea/kea-dhcp4.conf"
+
+# Interfaz de red en la que escucha Kea dentro de dhcp01
+kea_interfaces:
+  - "eth0"
+
+# Sin servidor DNS anunciado hasta desplegarlo en la siguiente fase
+kea_dns_servers: []
+kea_domain_name: "virtualcorp.local"
+
+kea_valid_lifetime: 3600
+kea_renew_timer: 1800
+kea_rebind_timer: 2700
+
+# Subredes con asignación DHCP (se excluyen enlaces punto a punto entre routers)
+kea_dhcp4_subnets:
+  - id: 1
+    subnet: "10.8.0.128/26"
+    pools:
+      - pool: "10.8.0.150 - 10.8.0.185"
+    option-data:
+      - name: "routers"
+        data: "10.8.0.129"
+    reservations:
+      - hostname: "dbsrv"
+        hw-address: "08:00:27:2e:eb:85"
+        ip-address: "10.8.0.134"
+      - hostname: "infosrv"
+        hw-address: "08:00:27:5f:c1:79"
+        ip-address: "10.8.0.135"
+      - hostname: "intrasrv"
+        hw-address: "08:00:27:38:a3:03"
+        ip-address: "10.8.0.136"
+
+  - id: 2
+    subnet: "10.8.0.192/27"
+    pools:
+      - pool: "10.8.0.205 - 10.8.0.220"
+    option-data:
+      - name: "routers"
+        data: "10.8.0.193"
+    reservations:
+      - hostname: "websrv"
+        hw-address: "08:00:27:7d:52:7d"
+        ip-address: "10.8.0.197"
+      - hostname: "coresrv"
+        hw-address: "08:00:27:d1:62:a3"
+        ip-address: "10.8.0.198"
+      - hostname: "streamingsrv"
+        hw-address: "08:00:27:35:c3:45"
+        ip-address: "10.8.0.199"
+
+  - id: 3
+    subnet: "10.8.0.0/25"
+    pools:
+      - pool: "10.8.0.45 - 10.8.0.60"
+    option-data:
+      - name: "routers"
+        data: "10.8.0.1"
+    reservations:
+      - hostname: "printer0"
+        hw-address: "08:00:27:5e:60:9f"
+        ip-address: "10.8.0.65"
+
+  - id: 4
+    subnet: "10.8.1.0/24"
+    pools:
+      - pool: "10.8.1.40 - 10.8.1.60"
+    option-data:
+      - name: "routers"
+        data: "10.8.1.1"
+    reservations:
+      - hostname: "printer1"
+        hw-address: "08:00:27:c1:f7:02"
+        ip-address: "10.8.1.65"
+
+  - id: 5
+    subnet: "10.8.2.0/24"
+    pools:
+      - pool: "10.8.2.40 - 10.8.2.60"
+    option-data:
+      - name: "routers"
+        data: "10.8.2.1"
+    reservations:
+      - hostname: "printer2"
+        hw-address: "08:00:27:ef:2d:5f"
+        ip-address: "10.8.2.65"
+
+  - id: 6
+    subnet: "10.8.3.0/25"
+    pools:
+      - pool: "10.8.3.40 - 10.8.3.60"
+    option-data:
+      - name: "routers"
+        data: "10.8.3.1"
+    reservations:
+      - hostname: "printer3"
+        hw-address: "08:00:27:b7:75:a8"
+        ip-address: "10.8.3.65"
+
+  - id: 7
+    subnet: "10.8.3.128/25"
+    pools:
+      - pool: "10.8.3.140 - 10.8.3.180"
+    option-data:
+      - name: "routers"
+        data: "10.8.3.129"
+    reservations: []

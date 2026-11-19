@@ -1,0 +1,45 @@
+---
+- name: Comprovar l'estat dels serveis abans d'instal·lar
+  ansible.builtin.service_facts:
+
+- name: Instal·lar el paquet del servidor Kea DHCPv4
+  ansible.builtin.apt:
+    name: kea-dhcp4-server
+    state: present
+    update_cache: "{{ 'kea-dhcp4-server.service' not in ansible_facts.services }}"
+  when: "'kea-dhcp4-server.service' not in ansible_facts.services"
+
+- name: Generar la configuració de Kea DHCPv4
+  ansible.builtin.template:
+    src: kea-dhcp4.conf.j2
+    dest: /etc/kea/kea-dhcp4.conf
+    owner: root
+    group: _kea
+    mode: "0640"
+  register: kea_cfg_result
+
+- name: Validar la configuració de Kea DHCPv4 abans de reiniciar
+  ansible.builtin.command:
+    cmd: kea-dhcp4 -t /etc/kea/kea-dhcp4.conf
+  changed_when: false
+  when: kea_cfg_result.changed
+  notify: Reiniciar Kea DHCPv4
+
+- name: Assegurar el directori /run/lock abans d'iniciar el servei
+  ansible.builtin.file:
+    path: /run/lock
+    state: directory
+    mode: "1777"
+
+- name: Emmiscarar run-lock.mount per evitar errors de muntatge en LXC
+  ansible.builtin.systemd:
+    name: run-lock.mount
+    masked: true
+    daemon_reload: true
+
+
+- name: Habilitar i iniciar el servei Kea DHCPv4
+  ansible.builtin.systemd:
+    name: kea-dhcp4-server
+    enabled: true
+    state: started
