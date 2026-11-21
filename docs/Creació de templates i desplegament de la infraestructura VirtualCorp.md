@@ -78,10 +78,10 @@ A continuación se detalla la correspondencia completa de cada máquina, su red 
 | `websrv` | server | `dmz` | `10.8.0.197` | `/27` | `10.8.0.193` |
 | `coresrv` | server | `dmz` | `10.8.0.198` | `/27` | `10.8.0.193` |
 | `streamingsrv` | server | `dmz` | `10.8.0.199` | `/27` | `10.8.0.193` |
-| `printer0` | server | `pl0` | `10.8.0.65` | `/25` | - |
-| `printer1` | server | `pl1` | `10.8.1.65` | `/24` | - |
-| `printer2` | server | `pl2` | `10.8.2.65` | `/24` | - |
-| `printer3` | server | `pl3` | `10.8.3.65` | `/25` | - |
+| `printer0` | server | `pl0` | `10.8.0.65` | `/25` | 10.8.0.1 |
+| `printer1` | server | `pl1` | `10.8.1.65` | `/24` | 10.8.1.1 |
+| `printer2` | server | `pl2` | `10.8.2.65` | `/24` | 10.8.2.1 |
+| `printer3` | server | `pl3` | `10.8.3.65` | `/25` | 10.8.3.1 |
 | `expo1` | desktop | `pl0` | `10.8.0.33` | `/26` | `10.8.0.129` |
 | `expo2` | desktop | `pl0` | `10.8.0.34` | `/26` | `10.8.0.129` |
 | `expo3` | desktop | `pl0` | `10.8.0.35` | `/26` | `10.8.0.129` |
