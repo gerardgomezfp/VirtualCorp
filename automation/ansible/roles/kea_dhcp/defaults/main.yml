@@ -7,8 +7,9 @@ kea_config_path: "/etc/kea/kea-dhcp4.conf"
 kea_interfaces:
   - "eth0"
 
-# Sin servidor DNS anunciado hasta desplegarlo en la siguiente fase
-kea_dns_servers: []
+# Servidor DNS anunciado a los clientes (contenedor DNS del siguiente ejercicio)
+kea_dns_servers:
+  - "10.8.0.138"
 kea_domain_name: "virtualcorp.local"
 
 kea_valid_lifetime: 3600

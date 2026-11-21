@@ -1,0 +1,35 @@
+---
+# Dirección del servidor Kea DHCP
+dhcp_relay_server: "10.8.0.137"
+
+# Relays DHCP que deben configurarse
+dhcp_relay_entries:
+  - name: "vcorp-dmz"
+    router: "mikrotik0"
+    interface: "ether3"
+    local_address: "10.8.0.193"
+
+  - name: "vcorp-planta00"
+    router: "mikrotik0"
+    interface: "ether5"
+    local_address: "10.8.0.1"
+
+  - name: "vcorp-planta01"
+    router: "mikrotik2"
+    interface: "ether4"
+    local_address: "10.8.1.1"
+
+  - name: "vcorp-planta02"
+    router: "mikrotik2"
+    interface: "ether5"
+    local_address: "10.8.2.1"
+
+  - name: "vcorp-planta03"
+    router: "mikrotik3"
+    interface: "ether3"
+    local_address: "10.8.3.1"
+
+  - name: "vcorp-direccio"
+    router: "mikrotik3"
+    interface: "ether4"
+    local_address: "10.8.3.129"

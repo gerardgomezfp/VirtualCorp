@@ -11,7 +11,7 @@ export VBOX_ROOT_GROUP VM_ROUTERS_GROUP VM_TEMPLATES_GROUP VM_EQUIPMENT_GROUP VM
 BASH_DIR := $(PROJECT_ROOT)/infrastructure/bash
 BOOTSTRAP_DIR := $(PROJECT_ROOT)/automation/scripts/bootstrap
 
-.PHONY: help deploy-routers delete-routers reset-routers reset_routers ssh-keys routeros-box create_templates deploy_equipment deploy_pve
+.PHONY: help deploy-routers delete-routers reset-routers reset_routers ssh-keys routeros-box create_templates deploy_equipment deploy_pve deploy_dhcp
 
 help:
 	@printf '%s\n' \
@@ -23,7 +23,8 @@ help:
 	  '  routeros-box    Build the RouterOS Virtual box' \
 	  '  create_templates  Create Debian Server and Desktop templates' \
 	  '  deploy_equipment  Deploy all Delegation 8 equipment' \
-	  '  deploy_pve  Install Proxmox VE (pve01) unattended'
+	  '  deploy_pve  Install Proxmox VE (pve01) unattended' \
+	  '  deploy_dhcp  Deploy DHCP service (Terraform + Kea + relays)'
 
 deploy-routers:
 	"$(BASH_DIR)/deploy_routers.sh"
@@ -53,3 +54,8 @@ deploy_equipment:
 	bash "$(BASH_DIR)/deploy_equipment.sh"
 	bash "$(BASH_DIR)/configure_equipment.sh" --all
 	bash "$(BASH_DIR)/deploy_pve.sh"
+
+# Desplegament DHCP: contenidor dhcp01 (Terraform) + Kea i relays (Ansible)
+deploy_dhcp:
+	cd "$(PROJECT_ROOT)/infrastructure/terraform/proxmox" && terraform init -input=false && terraform apply -input=false -auto-approve -var-file=terraform.local.tfvars
+	cd "$(PROJECT_ROOT)/automation/ansible" && ansible-playbook playbooks/dhcp.yml && ansible-playbook playbooks/dhcp_relay.yml

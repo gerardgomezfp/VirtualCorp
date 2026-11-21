@@ -4,3 +4,5 @@
   become: true
   roles:
     - role: kea_dhcp
+
+- import_playbook: dhcp_relay.yml
