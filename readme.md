@@ -11,5 +11,5 @@ Pots consultar les memòries tècniques i el desenvolupament complet de cada fas
 - **Activitat 1:** [Configuració i Desplegament de MikroTiks](./docs/exercici1-mikrotiks.md)
 - **Activitat 2:** [Memòria Tècnica de Desplegament (Delegació 8)](./docs/memoria-tecnica-desplegament-vcorp.md)
 - **Activitat 3:** [Automatització VPN WireGuard i Split Tunneling](./docs/Actividad-3-wireguard-y-ansible.md)
-- **Activitat 4:** [Kea DHCP i Terraform](./docs/Actividad-4-kea-DHCP-Terraform.md)
+- **Activitat 4:** [Kea DHCP i Terraform](./docs/docs/Actividad 4-kea DHCP-Terraform.md)
 ---
