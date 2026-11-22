@@ -12,6 +12,16 @@ SSH_TARGET="127.0.0.1"
 SSH_RULE="vcorp-config"
 SSH_TIMEOUT=120
 
+# Mode de xarxa de les VMs: static (IP fixa de l'inventari) o dhcp (Kea)
+NETWORK_MODE="${NETWORK_MODE:-static}"
+case "$NETWORK_MODE" in
+    static|dhcp) ;;
+    *)
+        echo "ERROR: NETWORK_MODE ha de ser static o dhcp."
+        exit 1
+        ;;
+esac
+
 # name | internal network | IP | prefix | gateway
 INVENTORY=$(cat <<'INVENTORY_EOF'
 dbsrv|privada|10.8.0.134|26|10.8.0.129
@@ -125,13 +135,14 @@ configure_guest() {
     local gateway="$4"
 
     ssh "${SSH_OPTS[@]}" "${SSH_USER}@${SSH_TARGET}" \
-        "sudo bash -s -- '$name' '$ip' '$prefix' '$gateway'" <<'REMOTE_EOF'
+        "sudo bash -s -- '$name' '$ip' '$prefix' '$gateway' '$NETWORK_MODE'" <<'REMOTE_EOF'
 set -Eeuo pipefail
 
 hostname="$1"
 address="$2"
 prefix="$3"
 gateway="$4"
+mode="${5:-static}"
 
 device="$(ip -o route show default |
     awk '{for (i=1; i<=NF; i++) if ($i=="dev") {print $(i+1); exit}}')"
@@ -159,18 +170,39 @@ if command -v nmcli >/dev/null 2>&1 &&
         exit 1
     fi
 
-    nmcli connection modify "$connection" \
-        ipv4.method manual \
-        ipv4.addresses "$address/$prefix" \
-        ipv4.gateway "$gateway" \
-        ipv4.dns "" \
-        ipv4.ignore-auto-dns yes \
-        ipv6.method disabled
+    if [[ "$mode" == "dhcp" ]]; then
+        nmcli connection modify "$connection" \
+            ipv4.method auto \
+            ipv4.addresses "" \
+            ipv4.gateway "" \
+            ipv4.dns "" \
+            ipv4.ignore-auto-dns no \
+            ipv6.method disabled
+    else
+        nmcli connection modify "$connection" \
+            ipv4.method manual \
+            ipv4.addresses "$address/$prefix" \
+            ipv4.gateway "$gateway" \
+            ipv4.dns "" \
+            ipv4.ignore-auto-dns yes \
+            ipv6.method disabled
+    fi
 
 elif systemctl is-active --quiet systemd-networkd; then
 
     mkdir -p /etc/systemd/network
-    cat > /etc/systemd/network/10-vcorp-static.network <<NETWORK_EOF
+    if [[ "$mode" == "dhcp" ]]; then
+        rm -f /etc/systemd/network/10-vcorp-static.network
+        cat > /etc/systemd/network/10-vcorp-dhcp.network <<NETWORK_EOF
+[Match]
+Name=$device
+
+[Network]
+DHCP=ipv4
+NETWORK_EOF
+    else
+        rm -f /etc/systemd/network/10-vcorp-dhcp.network
+        cat > /etc/systemd/network/10-vcorp-static.network <<NETWORK_EOF
 [Match]
 Name=$device
 
@@ -178,6 +210,7 @@ Name=$device
 Address=$address/$prefix
 Gateway=$gateway
 NETWORK_EOF
+    fi
 
     systemctl enable systemd-networkd
 
@@ -186,6 +219,15 @@ elif [[ -f /etc/network/interfaces ]]; then
     cp -a /etc/network/interfaces \
         /etc/network/interfaces.vcorp-backup
 
+    if [[ "$mode" == "dhcp" ]]; then
+        stanza="iface $device inet dhcp"
+    else
+        stanza="iface $device inet static
+    address $address
+    netmask $(python3 -c 'import ipaddress,sys; print(ipaddress.IPv4Network("0.0.0.0/"+sys.argv[1]).netmask)' "$prefix")
+    gateway $gateway"
+    fi
+
     cat > /etc/network/interfaces <<INTERFACES_EOF
 source-directory /etc/network/interfaces.d
 
@@ -193,10 +235,7 @@ auto lo
 iface lo inet loopback
 
 allow-hotplug $device
-iface $device inet static
-    address $address
-    netmask $(python3 -c 'import ipaddress,sys; print(ipaddress.IPv4Network("0.0.0.0/"+sys.argv[1]).netmask)' "$prefix")
-    gateway $gateway
+$stanza
 INTERFACES_EOF
 
 else
@@ -207,7 +246,11 @@ fi
 echo "Configuració preparada:"
 echo "Hostname: $hostname"
 echo "Interfície: $device"
-echo "IP: $address/$prefix"
+if [[ "$mode" == "dhcp" ]]; then
+    echo "IP: DHCP (reserva esperada: $address/$prefix)"
+else
+    echo "IP: $address/$prefix"
+fi
 echo "Gateway: $gateway"
 REMOTE_EOF
 }

@@ -1,0 +1,8 @@
+---
+- name: Configurar el servidor Kea DHCPv4
+  hosts: dhcp_servers
+  become: true
+  roles:
+    - role: kea_dhcp
+
+- import_playbook: dhcp_relay.yml

@@ -84,6 +84,7 @@ Antes de iniciar cualquier operación, el script valida la existencia de la carp
 
 A continuación se detalla la correspondencia completa de cada máquina, su red asignada, dirección IP, máscara/prefijo y puerta de enlace (*gateway*):
 
+<<<<<<< HEAD:docs/memoria-tecnica-desplegament-vcorp.md
 | Máquina | Tipo | Red VirtualBox | Dirección IP | Prefijo | Gateway | 
 | ----- | ----- | ----- | ----- | ----- | ----- | 
 | `pve01` | proxmox | `privada` | `10.8.0.133` | `/26` | `10.8.0.129` | 
@@ -116,6 +117,42 @@ A continuación se detalla la correspondencia completa de cada máquina, su red 
 | `directiu1` | desktop | `pl3_direccio` | `10.8.3.130` | `/24` | `10.8.3.1` | 
 | `directiu2` | desktop | `pl3_direccio` | `10.8.3.131` | `/24` | `10.8.3.1` | 
 | `directiu3` | desktop | `pl3_direccio` | `10.8.3.132` | `/24` | `10.8.3.1` | 
+=======
+| Máquina | Tipo | Red VirtualBox | Dirección IP | Prefijo | Gateway |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `pve01` | proxmox | `privada` | `10.8.0.133` | `/26` | `10.8.0.129` |
+| `dbsrv` | server | `privada` | `10.8.0.134` | `/26` | `10.8.0.129` |
+| `infosrv` | server | `privada` | `10.8.0.135` | `/26` | `10.8.0.129` |
+| `intrasrv` | server | `privada` | `10.8.0.136` | `/26` | `10.8.0.129` |
+| `websrv` | server | `dmz` | `10.8.0.197` | `/27` | `10.8.0.193` |
+| `coresrv` | server | `dmz` | `10.8.0.198` | `/27` | `10.8.0.193` |
+| `streamingsrv` | server | `dmz` | `10.8.0.199` | `/27` | `10.8.0.193` |
+| `printer0` | server | `pl0` | `10.8.0.65` | `/25` | 10.8.0.1 |
+| `printer1` | server | `pl1` | `10.8.1.65` | `/24` | 10.8.1.1 |
+| `printer2` | server | `pl2` | `10.8.2.65` | `/24` | 10.8.2.1 |
+| `printer3` | server | `pl3` | `10.8.3.65` | `/25` | 10.8.3.1 |
+| `expo1` | desktop | `pl0` | `10.8.0.33` | `/26` | `10.8.0.129` |
+| `expo2` | desktop | `pl0` | `10.8.0.34` | `/26` | `10.8.0.129` |
+| `expo3` | desktop | `pl0` | `10.8.0.35` | `/26` | `10.8.0.129` |
+| `expo4` | desktop | `pl0` | `10.8.0.36` | `/26` | `10.8.0.129` |
+| `conserge1` | desktop | `pl0` | `10.8.0.37` | `/26` | `10.8.0.129` |
+| `conserge2` | desktop | `pl0` | `10.8.0.38` | `/26` | `10.8.0.129` |
+| `web-p1` | server | `pl1` | `10.8.1.10` | `/24` | `10.8.1.1` |
+| `data-p1` | server | `pl1` | `10.8.1.11` | `/24` | `10.8.1.1` |
+| `web-p2` | server | `pl1` | `10.8.1.12` | `/24` | `10.8.1.1` |
+| `data-p2` | server | `pl1` | `10.8.1.13` | `/24` | `10.8.1.1` |
+| `dev1` | desktop | `pl1` | `10.8.1.30` | `/24` | `10.8.1.1` |
+| `web-p3` | server | `pl2` | `10.8.2.10` | `/24` | `10.8.2.1` |
+| `data-p3` | server | `pl2` | `10.8.2.11` | `/24` | `10.8.2.1` |
+| `dev2` | desktop | `pl2` | `10.8.2.30` | `/24` | `10.8.2.1` |
+| `Laptop2` | desktop | `pl3` | `10.8.3.10` | `/24` | `10.8.3.1` |
+| `Laptop3` | desktop | `pl3` | `10.8.3.11` | `/24` | `10.8.3.1` |
+| `directiu1` | desktop | `pl3_direccio` | `10.8.3.130` | `/24` | `10.8.3.1` |
+| `directiu2` | desktop | `pl3_direccio` | `10.8.3.131` | `/24` | `10.8.3.1` |
+| `directiu3` | desktop | `pl3_direccio` | `10.8.3.132` | `/24` | `10.8.3.1` |
+
+---
+>>>>>>> adaptacion-delegacion8:docs/Creació de templates i desplegament de la infraestructura VirtualCorp.md
 
 ## 4. Instalación Desatendida de Proxmox VE (`pve01`)
 
@@ -134,5 +171,7 @@ El despliegue del hipervisor Proxmox VE (`pve01`) se automatiza mediante la herr
 ## 5. Comprobaciones Técnicas y Validación
 
 1. **Verificación de Inyección SSH**: Se ha auditado el archivo de claves autorizadas en `pve01` y en los nodos Debian, comprobando el correcto funcionamiento de la automatización sin intervención manual.
+<<<<<<< HEAD:docs/memoria-tecnica-desplegament-vcorp.md
 
+>>>>>>> adaptacion-delegacion8:docs/Creació de templates i desplegament de la infraestructura VirtualCorp.md
 2. **Conectividad de Red**: Se ha comprobado con éxito la conectividad desde el interior de `pve01` hacia las pasarelas locales (0% de pérdida de paquetes), quedando pendiente el tráfico externo por la futura configuración de los servicios de red y NAT perimetrales.

@@ -208,3 +208,10 @@ __pycache__/
 venv/
 .venv/
 
+
+#-------------------------------------------------------------
+#carpeta de terraform conté connectors descarregats localment
+terraform.local.tfvars
+terraform.tfstate
+.terraform/
+

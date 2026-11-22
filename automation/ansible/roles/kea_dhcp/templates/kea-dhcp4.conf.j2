@@ -1,0 +1,17 @@
+{{
+  {
+    "Dhcp4": {
+      "interfaces-config": {
+        "interfaces": kea_interfaces | default(["eth0"])
+      },
+      "valid-lifetime": kea_valid_lifetime | default(3600),
+      "renew-timer": kea_renew_timer | default(1800),
+      "rebind-timer": kea_rebind_timer | default(2700),
+      "option-data": (
+        [{"name": "domain-name", "data": kea_domain_name | default("virtualcorp.local")}]
+        + ([{"name": "domain-name-servers", "data": kea_dns_servers | join(", ")}] if kea_dns_servers | length > 0 else [])
+      ),
+      "subnet4": kea_dhcp4_subnets
+    }
+  } | to_nice_json
+}}

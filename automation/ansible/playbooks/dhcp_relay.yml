@@ -1,0 +1,6 @@
+---
+- name: Configurar DHCP Relay en VirtualCorp
+  hosts: mikrotik
+  gather_facts: false
+  roles:
+    - dhcp_relay

@@ -1,4 +1,3 @@
-
 all:
   children:
     vbox:
@@ -12,7 +11,7 @@ all:
             - mikrotik2
             - mikrotik3
 
-#aqui definim com anisble podra entrar al router0 de vcorp, amb el seu port clau privada i usuari.
+    # Aqui definim com ansible podra entrar al router0 de vcorp, amb el seu port, clau privada i usuari
     mikrotik:
       hosts:
         mikrotik0:
@@ -22,3 +21,11 @@ all:
           ansible_ssh_private_key_file: ~/.ssh/vcorp_sysadmin
           ansible_connection: ansible.netcommon.network_cli
           ansible_network_os: community.routeros.routeros
+
+    # Aqui definim com ansible podra entrar al contenido dhcp01, amb la seva ip, clau privada i usuari root.
+    dhcp_servers:
+      hosts:
+        dhcp01:
+          ansible_host: 10.8.0.137
+          ansible_user: root
+          ansible_ssh_private_key_file: ~/.ssh/vcorp_sysadmin

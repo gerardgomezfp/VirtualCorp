@@ -1,0 +1,118 @@
+---
+# 1. Consultar l'estat actual dels relays
+- name: Consultar la configuració dels relays DHCP
+  community.routeros.command:
+    commands:
+      - >-
+        {%- set script = ':if ([:len [/ip dhcp-relay find where name=' ~ item.name ~ ']] > 0) do={:put FOUND; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] name]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] interface]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] dhcp-server]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] local-address]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] disabled]} else={:put MISSING}' -%}
+        {%- if item.router == 'mikrotik0' -%}
+        {{ script }}
+        {%- else -%}
+        /system ssh {{ '10.8.0.230' if item.router == 'mikrotik2' else '10.8.0.234' }} user=sysadmin command="{{ script }}"
+        {%- endif -%}
+  loop: "{{ dhcp_relay_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: dhcp_relay_queries
+  changed_when: false
+
+
+# 2. Netejar les respostes dels routers
+- name: Preparar les respostes de les consultes DHCP
+  ansible.builtin.set_fact:
+    dhcp_relay_raw: "{{ dhcp_relay_raw | default([]) + [{'entry': item.item, 'output': (item.stdout | join('\n') | regex_replace('\\x1b.', '') | regex_replace('\\r', ''))}] }}"
+  loop: "{{ dhcp_relay_queries.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+
+# 3. Interpretar les dades obtingudes
+- name: Registrar l'estat actual dels relays
+  ansible.builtin.set_fact:
+    dhcp_relay_states: "{{ dhcp_relay_states | default([]) + [{'entry': item.entry, 'line': ('RELAY|' ~ (matches | first | join('|'))) if matches | length > 0 else ''}] }}"
+  vars:
+    matches: "{{ item.output | regex_findall('FOUND\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)') }}"
+  loop: "{{ dhcp_relay_raw }}"
+  loop_control:
+    label: "{{ item.entry.name }}"
+
+
+# 4. Mostrar l'estat detectat
+- name: Mostrar l'estat actual dels relays
+  ansible.builtin.debug:
+    msg: "{{ item.entry.name }} => {{ item.line if item.line != '' else 'AUSENTE O SIN RESPUESTA' }}"
+  loop: "{{ dhcp_relay_states }}"
+  loop_control:
+    label: "{{ item.entry.name }}"
+
+
+# 5. Crear els relays absents o corregir els existents
+- name: Crear o actualitzar els relays DHCP
+  community.routeros.command:
+    commands:
+      - >-
+        {%- set script = ':if ([:len [/ip dhcp-relay find where name=' ~ item.entry.name ~ ']] = 0) do={/ip dhcp-relay add name=' ~ item.entry.name ~ ' interface=' ~ item.entry.interface ~ ' dhcp-server=' ~ dhcp_relay_server ~ ' local-address=' ~ item.entry.local_address ~ ' disabled=no} else={/ip dhcp-relay set [find where name=' ~ item.entry.name ~ '] interface=' ~ item.entry.interface ~ ' dhcp-server=' ~ dhcp_relay_server ~ ' local-address=' ~ item.entry.local_address ~ ' disabled=no}; :put APPLIED' -%}
+        {%- if item.entry.router == 'mikrotik0' -%}
+        {{ script }}
+        {%- else -%}
+        /system ssh {{ '10.8.0.230' if item.entry.router == 'mikrotik2' else '10.8.0.234' }} user=sysadmin command="{{ script }}"
+        {%- endif -%}
+  loop: "{{ dhcp_relay_states }}"
+  loop_control:
+    label: "{{ item.entry.name }}"
+  when: >-
+    item.line == ''
+    or item.line.split('|')[2] != item.entry.interface
+    or item.line.split('|')[3] != dhcp_relay_server
+    or item.line.split('|')[4] != item.entry.local_address
+    or item.line.split('|')[5] != 'false'
+  register: dhcp_relay_apply
+  changed_when: true
+
+
+# 6. Tornar a consultar els routers per verificar els canvis
+- name: Verificar la configuració final dels relays DHCP
+  community.routeros.command:
+    commands:
+      - >-
+        {%- set script = ':if ([:len [/ip dhcp-relay find where name=' ~ item.name ~ ']] > 0) do={:put FOUND; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] name]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] interface]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] dhcp-server]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] local-address]; :put [/ip dhcp-relay get [find where name=' ~ item.name ~ '] disabled]} else={:put MISSING}' -%}
+        {%- if item.router == 'mikrotik0' -%}
+        {{ script }}
+        {%- else -%}
+        /system ssh {{ '10.8.0.230' if item.router == 'mikrotik2' else '10.8.0.234' }} user=sysadmin command="{{ script }}"
+        {%- endif -%}
+  loop: "{{ dhcp_relay_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: dhcp_relay_verification
+  changed_when: false
+
+
+# 7. Comprovar que tots els relays tenen els valors esperats
+- name: Validar la configuració final dels relays DHCP
+  ansible.builtin.assert:
+    that:
+      - matches | length > 0
+      - matches[0][0] == item.item.name
+      - matches[0][1] == item.item.interface
+      - matches[0][2] == dhcp_relay_server
+      - matches[0][3] == item.item.local_address
+      - matches[0][4] == 'false'
+    fail_msg: "ERROR: {{ item.item.name }} no te la configuracio esperada."
+    quiet: true
+  vars:
+    cleaned_output: "{{ item.stdout | join('\n') | regex_replace('\\x1b.', '') | regex_replace('\\r', '') }}"
+    matches: "{{ cleaned_output | regex_findall('FOUND\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)') }}"
+  loop: "{{ dhcp_relay_verification.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  register: dhcp_relay_validation
+
+
+# 8. Mostrar un resum net de la verificació
+- name: Mostrar el resultat de la verificació DHCP
+  ansible.builtin.debug:
+    msg: "{{ item.item.item.name }} verificat correctament."
+  loop: "{{ dhcp_relay_validation.results }}"
+  loop_control:
+    label: "{{ item.item.item.name }}"

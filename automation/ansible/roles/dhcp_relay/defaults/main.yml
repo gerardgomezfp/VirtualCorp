@@ -1,0 +1,41 @@
+---
+# Adreça del servidor Kea DHCPv4 de la Delegació 8 (10.8.0.137 per evitar solapament amb .136)
+dhcp_relay_server: "10.8.0.137"
+
+# Relays DHCP que s'han de configurar a les LAN amb clients (s'exclouen enllaços entre routers i WireGuard)
+dhcp_relay_entries:
+  # DMZ (10.8.0.192/27) -> mikrotik0
+  - name: "vcorp-dmz"
+    router: "mikrotik0"
+    interface: "ether3"
+    local_address: "10.8.0.193"
+
+  # Planta 00 (10.8.0.0/25) -> mikrotik0
+  - name: "vcorp-planta00"
+    router: "mikrotik0"
+    interface: "ether5"
+    local_address: "10.8.0.1"
+
+  # Planta 01 (10.8.1.0/24) -> mikrotik2
+  - name: "vcorp-planta01"
+    router: "mikrotik2"
+    interface: "ether4"
+    local_address: "10.8.1.1"
+
+  # Planta 02 (10.8.2.0/24) -> mikrotik2
+  - name: "vcorp-planta02"
+    router: "mikrotik2"
+    interface: "ether5"
+    local_address: "10.8.2.1"
+
+  # Planta 03 (10.8.3.0/25) -> mikrotik3
+  - name: "vcorp-planta03"
+    router: "mikrotik3"
+    interface: "ether3"
+    local_address: "10.8.3.1"
+
+  # Direcció (10.8.3.128/25) -> mikrotik3
+  - name: "vcorp-direccio"
+    router: "mikrotik3"
+    interface: "ether4"
+    local_address: "10.8.3.129"
