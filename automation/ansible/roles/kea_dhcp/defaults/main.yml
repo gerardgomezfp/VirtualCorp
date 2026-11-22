@@ -1,23 +1,27 @@
 ---
+# Nom del paquet i del servei del servidor Kea DHCPv4 a Debian
 kea_package_name: "kea-dhcp4-server"
 kea_service_name: "kea-dhcp4-server"
+# Ruta del fitxer principal de configuració de Kea DHCPv4
 kea_config_path: "/etc/kea/kea-dhcp4.conf"
 
-# Interfaz de red en la que escucha Kea dentro de dhcp01
+# Interfície de xarxa on escolta Kea dins del contenidor dhcp01 (10.8.0.137)
 kea_interfaces:
   - "eth0"
 
-# Servidor DNS anunciado a los clientes (contenedor DNS del siguiente ejercicio)
+# Servidor DNS anunciat als clients (10.8.0.138 per evitar solapament amb .136) i domini intern
 kea_dns_servers:
   - "10.8.0.138"
 kea_domain_name: "virtualcorp.local"
 
+# Temps de concessió (en segons): validesa total, renovació i re-vinculació
 kea_valid_lifetime: 3600
 kea_renew_timer: 1800
 kea_rebind_timer: 2700
 
-# Subredes con asignación DHCP (se excluyen enlaces punto a punto entre routers)
+# Subxarxes de la Delegació 8 amb assignació DHCP (s'exclouen enllaços punt a punt entre routers)
 kea_dhcp4_subnets:
+  # Xarxa privada interna (10.8.0.128/26) -> passarel·la 10.8.0.129 i reserves de servidors interns
   - id: 1
     subnet: "10.8.0.128/26"
     pools:
@@ -36,6 +40,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:38:a3:03"
         ip-address: "10.8.0.136"
 
+  # Zona desmilitaritzada / DMZ (10.8.0.192/27) -> passarel·la 10.8.0.193 i reserves de servidors exposats
   - id: 2
     subnet: "10.8.0.192/27"
     pools:
@@ -54,6 +59,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:35:c3:45"
         ip-address: "10.8.0.199"
 
+  # Planta baixa / Planta 00 (10.8.0.0/25) -> passarel·la 10.8.0.1 i reserva de printer0
   - id: 3
     subnet: "10.8.0.0/25"
     pools:
@@ -66,6 +72,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:5e:60:9f"
         ip-address: "10.8.0.65"
 
+  # Planta 01 (10.8.1.0/24) -> passarel·la 10.8.1.1 i reserva de printer1
   - id: 4
     subnet: "10.8.1.0/24"
     pools:
@@ -78,6 +85,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:c1:f7:02"
         ip-address: "10.8.1.65"
 
+  # Planta 02 (10.8.2.0/24) -> passarel·la 10.8.2.1 i reserva de printer2
   - id: 5
     subnet: "10.8.2.0/24"
     pools:
@@ -90,6 +98,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:ef:2d:5f"
         ip-address: "10.8.2.65"
 
+  # Planta 03 (10.8.3.0/25) -> passarel·la 10.8.3.1 i reserva de printer3
   - id: 6
     subnet: "10.8.3.0/25"
     pools:
@@ -102,6 +111,7 @@ kea_dhcp4_subnets:
         hw-address: "08:00:27:b7:75:a8"
         ip-address: "10.8.3.65"
 
+  # Xarxa de direcció (10.8.3.128/25) -> passarel·la 10.8.3.129 i pool dinàmic sense reserves fixes
   - id: 7
     subnet: "10.8.3.128/25"
     pools:

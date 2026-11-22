@@ -1,7 +1,6 @@
-
 ---
-# 1. Consultar el estado actual de los relays
-- name: Consultar configuración de los relays DHCP
+# 1. Consultar l'estat actual dels relays
+- name: Consultar la configuració dels relays DHCP
   community.routeros.command:
     commands:
       - >-
@@ -18,8 +17,8 @@
   changed_when: false
 
 
-# 2. Limpiar las respuestas de los routers
-- name: Preparar respuestas de las consultas DHCP
+# 2. Netejar les respostes dels routers
+- name: Preparar les respostes de les consultes DHCP
   ansible.builtin.set_fact:
     dhcp_relay_raw: "{{ dhcp_relay_raw | default([]) + [{'entry': item.item, 'output': (item.stdout | join('\n') | regex_replace('\\x1b.', '') | regex_replace('\\r', ''))}] }}"
   loop: "{{ dhcp_relay_queries.results }}"
@@ -27,8 +26,8 @@
     label: "{{ item.item.name }}"
 
 
-# 3. Interpretar los datos obtenidos
-- name: Registrar estado actual de los relays
+# 3. Interpretar les dades obtingudes
+- name: Registrar l'estat actual dels relays
   ansible.builtin.set_fact:
     dhcp_relay_states: "{{ dhcp_relay_states | default([]) + [{'entry': item.entry, 'line': ('RELAY|' ~ (matches | first | join('|'))) if matches | length > 0 else ''}] }}"
   vars:
@@ -38,8 +37,8 @@
     label: "{{ item.entry.name }}"
 
 
-# 4. Mostrar el estado detectado
-- name: Mostrar estado actual de los relays
+# 4. Mostrar l'estat detectat
+- name: Mostrar l'estat actual dels relays
   ansible.builtin.debug:
     msg: "{{ item.entry.name }} => {{ item.line if item.line != '' else 'AUSENTE O SIN RESPUESTA' }}"
   loop: "{{ dhcp_relay_states }}"
@@ -47,8 +46,8 @@
     label: "{{ item.entry.name }}"
 
 
-# 5. Crear los relays ausentes o corregir los existentes
-- name: Crear o actualizar relays DHCP
+# 5. Crear els relays absents o corregir els existents
+- name: Crear o actualitzar els relays DHCP
   community.routeros.command:
     commands:
       - >-
@@ -71,9 +70,8 @@
   changed_when: true
 
 
-
-# 6. Volver a consultar los routers para verificar los cambios
-- name: Verificar configuración final de los relays DHCP
+# 6. Tornar a consultar els routers per verificar els canvis
+- name: Verificar la configuració final dels relays DHCP
   community.routeros.command:
     commands:
       - >-
@@ -90,8 +88,8 @@
   changed_when: false
 
 
-# 7. Comprobar que todos los relays tienen los valores esperados
-- name: Validar configuración final de los relays DHCP
+# 7. Comprovar que tots els relays tenen els valors esperats
+- name: Validar la configuració final dels relays DHCP
   ansible.builtin.assert:
     that:
       - matches | length > 0
@@ -100,7 +98,7 @@
       - matches[0][2] == dhcp_relay_server
       - matches[0][3] == item.item.local_address
       - matches[0][4] == 'false'
-    fail_msg: "ERROR: {{ item.item.name }} no tiene la configuración esperada."
+    fail_msg: "ERROR: {{ item.item.name }} no te la configuracio esperada."
     quiet: true
   vars:
     cleaned_output: "{{ item.stdout | join('\n') | regex_replace('\\x1b.', '') | regex_replace('\\r', '') }}"
@@ -111,10 +109,10 @@
   register: dhcp_relay_validation
 
 
-# 8. Mostrar un resumen limpio de la verificación
-- name: Mostrar resultado de la verificación DHCP
+# 8. Mostrar un resum net de la verificació
+- name: Mostrar el resultat de la verificació DHCP
   ansible.builtin.debug:
-    msg: "{{ item.item.item.name }} verificado correctamente."
+    msg: "{{ item.item.item.name }} verificat correctament."
   loop: "{{ dhcp_relay_validation.results }}"
   loop_control:
     label: "{{ item.item.item.name }}"
