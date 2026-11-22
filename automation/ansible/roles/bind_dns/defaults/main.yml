@@ -5,7 +5,108 @@ bind_packages:
   - bind9-utils
   - bind9-dnsutils
 
-# Resolvedor temporal para poder instalar paquetes antes de que BIND9 exista.
-# Se fija en dhclient para que sobreviva a las renovaciones de lease.
+# Resolvedor temporal per instal·lar paquets abans que BIND9 estigui configurat
 bind_bootstrap_resolver: "8.8.8.8"
 bind_search_domain: "virtualcorp.local"
+
+# Adreces d'escolta i reenviadors del servidor DNS (dns01 -> 10.8.0.138)
+bind_listen_ipv4:
+  - "127.0.0.1"
+  - "10.8.0.138"
+bind_forwarders:
+  - "8.8.8.8"
+
+# Xarxes internes permeses per a consultes recursives (sense obrir a Internet)
+bind_allowed_clients:
+  - "localhost"
+  - "10.8.0.0/25"
+  - "10.8.0.128/26"
+  - "10.8.0.192/27"
+  - "10.8.1.0/24"
+  - "10.8.2.0/24"
+  - "10.8.3.0/24"
+  - "10.8.10.0/24"
+
+# Paràmetres SOA per defecte per a les zones locals de la Delegació 8
+bind_zone_default_ttl: 3600
+bind_zone_serial: 2026112201
+bind_zone_refresh: 3600
+bind_zone_retry: 900
+bind_zone_expire: 604800
+bind_zone_negative_ttl: 300
+bind_zone_ns_name: "ns1"
+bind_zone_admin_email: "admin.delegacion8.lan."
+
+# Zones autoritàries i registres A segons l'adreçament de la Delegació 8
+bind_zones:
+  - name: "delegacion8.com"
+    file: "/etc/bind/zones/db.delegacion8.com"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.197" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "websrv", type: "A", value: "10.8.0.197" }
+
+  - name: "delegacion8.lan"
+    file: "/etc/bind/zones/db.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "dns01", type: "A", value: "10.8.0.138" }
+      - { name: "dhcp01", type: "A", value: "10.8.0.137" }
+      - { name: "dbsrv", type: "A", value: "10.8.0.134" }
+      - { name: "infosrv", type: "A", value: "10.8.0.135" }
+      - { name: "intrasrv", type: "A", value: "10.8.0.136" }
+      - { name: "websrv", type: "A", value: "10.8.0.197" }
+      - { name: "coresrv", type: "A", value: "10.8.0.198" }
+      - { name: "streamingsrv", type: "A", value: "10.8.0.199" }
+
+  - name: "planta00.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta00.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.0.65" }
+      - { name: "printer0", type: "A", value: "10.8.0.65" }
+      - { name: "expo1", type: "A", value: "10.8.0.33" }
+      - { name: "expo2", type: "A", value: "10.8.0.34" }
+      - { name: "expo3", type: "A", value: "10.8.0.35" }
+      - { name: "expo4", type: "A", value: "10.8.0.36" }
+      - { name: "conserge1", type: "A", value: "10.8.0.37" }
+      - { name: "conserge2", type: "A", value: "10.8.0.38" }
+
+  - name: "planta01.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta01.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.1.65" }
+      - { name: "printer1", type: "A", value: "10.8.1.65" }
+      - { name: "web-p1", type: "A", value: "10.8.1.10" }
+      - { name: "data-p1", type: "A", value: "10.8.1.11" }
+      - { name: "web-p2", type: "A", value: "10.8.1.12" }
+      - { name: "data-p2", type: "A", value: "10.8.1.13" }
+      - { name: "dev1", type: "A", value: "10.8.1.30" }
+
+  - name: "planta02.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta02.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.2.65" }
+      - { name: "printer2", type: "A", value: "10.8.2.65" }
+      - { name: "web-p3", type: "A", value: "10.8.2.10" }
+      - { name: "data-p3", type: "A", value: "10.8.2.11" }
+      - { name: "dev2", type: "A", value: "10.8.2.30" }
+
+  - name: "planta03.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta03.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.3.65" }
+      - { name: "printer3", type: "A", value: "10.8.3.65" }
+      - { name: "laptop2", type: "A", value: "10.8.3.10" }
+      - { name: "laptop3", type: "A", value: "10.8.3.11" }
+      - { name: "directiu1", type: "A", value: "10.8.3.130" }
+      - { name: "directiu2", type: "A", value: "10.8.3.131" }
+      - { name: "directiu3", type: "A", value: "10.8.3.132" }

@@ -1,5 +1,6 @@
 ---
 - name: Configurar el servidor DNS BIND9
   hosts: bind_dns
+  become: true
   roles:
-    - role: bind_dns
+  - role: bind_dns

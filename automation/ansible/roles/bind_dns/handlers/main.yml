@@ -1,0 +1,6 @@
+# --- En roles/bind_dns/handlers/main.yml ---
+---
+- name: Recarregar BIND9
+  ansible.builtin.systemd:
+    name: "{{ bind_service_name }}"
+    state: reloaded

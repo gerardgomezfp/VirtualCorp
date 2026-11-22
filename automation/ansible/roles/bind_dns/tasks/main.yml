@@ -31,3 +31,51 @@
     name: "{{ bind_service_name }}"
     enabled: true
     state: started
+
+# --- En roles/bind_dns/tasks/main.yml ---
+- name: Crear el directori per als fitxers de zona de BIND9
+  ansible.builtin.file:
+    path: /etc/bind/zones
+    state: directory
+    owner: root
+    group: bind
+    mode: "0750"
+
+- name: Desplegar les opcions globals de BIND9
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recarregar BIND9
+
+- name: Desplegar la declaració de zones locals de BIND9
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recarregar BIND9
+
+- name: Desplegar els fitxers de zona de la Delegació 8
+  ansible.builtin.template:
+    src: db.zone.j2
+    dest: "{{ item.file }}"
+    owner: root
+    group: bind
+    mode: "0644"
+  loop: "{{ bind_zones }}"
+  notify: Recarregar BIND9
+
+- name: Validar la sintaxi global de BIND9 amb named-checkconf
+  ansible.builtin.command:
+    cmd: named-checkconf
+  changed_when: false
+
+- name: Validar cada fitxer de zona amb named-checkzone
+  ansible.builtin.command:
+    cmd: "named-checkzone {{ item.name }} {{ item.file }}"
+  loop: "{{ bind_zones }}"
+  changed_when: false

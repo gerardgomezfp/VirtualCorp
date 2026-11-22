@@ -1,0 +1,37 @@
+// Opcions globals de BIND9 per a la Delegació 8 (dns01 -> 10.8.0.138)
+acl "xarxes_confianca" {
+{% for client in bind_allowed_clients %}
+    {{ client }};
+{% endfor %}
+};
+
+options {
+    directory "/var/cache/bind";
+
+    // Escolta només a les interfícies locals i a la IP planificada de dns01
+    listen-on {
+{% for ip in bind_listen_ipv4 %}
+        {{ ip }};
+{% endfor %}
+    };
+    listen-on-v6 { none; };
+
+    // Recursió habilitada només per a clients interns autoritzats
+    recursion yes;
+    allow-query { any; };
+    allow-recursion { xarxes_confianca; };
+    allow-query-cache { xarxes_confianca; };
+
+    // Bloqueja transferències de zona no autoritzades
+    allow-transfer { none; };
+
+    // Reenviament a 8.8.8.8 per a dominis externs
+    forwarders {
+{% for fwd in bind_forwarders %}
+        {{ fwd }};
+{% endfor %}
+    };
+    forward only;
+
+    dnssec-validation auto;
+};
