@@ -2,6 +2,10 @@
 terraform {
   required_version = ">= 1.5.0" # Exigeix una versió mínima de Terraform instal·lada
   required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
     proxmox = {
       source  = "bpg/proxmox" # Proveïdor de Proxmox desenvolupat per bpg
       version = "~> 0.112.0"  # Fixa la sèrie de versions 0.112.x

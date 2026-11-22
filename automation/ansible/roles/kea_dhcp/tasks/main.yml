@@ -12,6 +12,52 @@
   when: "'kea-dhcp4-server.service' not in ansible_facts.services"
 
 # 3. Renderitzar i validar la configuració JSON de Kea abans d'escriure-la al destí
+- name: Inicializar la lista de servicios Terraform con reserva DHCP
+  ansible.builtin.set_fact:
+    kea_terraform_services: []
+
+- name: Resolver MAC, red e IP de cada servicio Terraform
+  ansible.builtin.set_fact:
+    kea_terraform_services: >-
+      {{ kea_terraform_services + [{
+        'name': item,
+        'mac': (hostvars[item].vcorp_mac_address | default('')) | lower,
+        'network': hostvars[item].vcorp_network | default(''),
+        'ips': (
+          [hostvars[item].vcorp_ipv4_cidr | split('/') | first]
+          if hostvars[item].vcorp_ipv4_cidr is defined
+          else (terraform_service_ip_assignments | default([])
+                | selectattr('hostname', 'equalto', item)
+                | map(attribute='ip_address') | list)
+        )
+      }] }}
+  loop: "{{ groups['terraform_services'] }}"
+
+- name: Validar MAC, red e IP única de los servicios Terraform
+  ansible.builtin.assert:
+    that:
+      - item.mac | length > 0
+      - item.network in kea_network_subnet_ids
+      - item.ips | length == 1
+    fail_msg: "{{ item.name }} necesita MAC, una red conocida y exactamente una IP."
+    quiet: true
+  loop: "{{ kea_terraform_services }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Añadir las reservas de los servicios Terraform a sus subredes
+  ansible.builtin.set_fact:
+    kea_dhcp4_subnets_effective: >-
+      {%- set out = [] -%}
+      {%- for s in kea_dhcp4_subnets -%}
+        {%- set extra = [] -%}
+        {%- for svc in kea_terraform_services if kea_network_subnet_ids[svc.network] == s.id -%}
+          {%- set _ = extra.append({'hostname': svc.name, 'hw-address': svc.mac, 'ip-address': svc.ips[0]}) -%}
+        {%- endfor -%}
+        {%- set _ = out.append(dict(s, reservations=(s.reservations | default([])) + extra)) -%}
+      {%- endfor -%}
+      {{ out }}
+
 - name: Generar la configuració de Kea DHCPv4 (validada abans d'escriure)
   ansible.builtin.template:
     src: kea-dhcp4.conf.j2

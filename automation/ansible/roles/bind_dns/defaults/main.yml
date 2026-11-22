@@ -1,0 +1,11 @@
+---
+bind_service_name: "named"
+bind_packages:
+  - bind9
+  - bind9-utils
+  - bind9-dnsutils
+
+# Resolvedor temporal para poder instalar paquetes antes de que BIND9 exista.
+# Se fija en dhclient para que sobreviva a las renovaciones de lease.
+bind_bootstrap_resolver: "8.8.8.8"
+bind_search_domain: "virtualcorp.local"

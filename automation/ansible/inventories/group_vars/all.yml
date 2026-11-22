@@ -1,0 +1,6 @@
+---
+# IP deseada de los servicios Terraform con interfaz DHCP (reserva en Kea).
+# No es una IP estática del contenedor: Kea la entrega por MAC.
+terraform_service_ip_assignments:
+  - hostname: dns01
+    ip_address: 10.8.0.138
