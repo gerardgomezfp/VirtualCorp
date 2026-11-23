@@ -1,5 +1,7 @@
+{# Plantilla unificada per generar fitxers de zona directa (A) i inversa (PTR) a BIND9 #}
 $TTL {{ bind_zone_default_ttl }}
 {% if item.records is defined and item.records | selectattr('ptr', 'defined') | list | length > 0 %}
+{# Branca per a zones inverses (*.in-addr.arpa): ressol IPv4 -> nom canònic (FQDN) #}
 @   IN  SOA ns1.delegacion8.lan. {{ bind_zone_admin_email }} (
         {{ bind_zone_serial }} ; Serial
         {{ bind_zone_refresh }}      ; Refresh
@@ -7,14 +9,15 @@ $TTL {{ bind_zone_default_ttl }}
         {{ bind_zone_expire }}    ; Expire
         {{ bind_zone_negative_ttl }} )     ; Negative Cache TTL
 
-; Registre NS de la zona inversa
+; Registre NS autoritatiu per a la zona inversa de la Delegació 8
 @   IN  NS  ns1.delegacion8.lan.
 
-; Registres PTR (IP -> nom canònic)
+; Registres PTR (últim octet dins del bloc -> FQDN acabat en punt)
 {% for rec in item.records %}
 {{ "%-14s" | format(rec.ptr) }} IN  PTR  {{ rec.fqdn }}
 {% endfor %}
 {% else %}
+{# Branca per a zones directes (*.delegacion8.lan / delegacion8.com): ressol nom -> IPv4 #}
 @   IN  SOA {{ bind_zone_ns_name }}.{{ item.name }}. {{ bind_zone_admin_email }} (
         {{ bind_zone_serial }} ; Serial
         {{ bind_zone_refresh }}      ; Refresh
@@ -22,7 +25,7 @@ $TTL {{ bind_zone_default_ttl }}
         {{ bind_zone_expire }}    ; Expire
         {{ bind_zone_negative_ttl }} )     ; Negative Cache TTL
 
-; Registres NS de la zona
+; Registre NS de la zona directa
 @   IN  NS  {{ bind_zone_ns_name }}.{{ item.name }}.
 
 ; Registres A definits per a {{ item.name }}
