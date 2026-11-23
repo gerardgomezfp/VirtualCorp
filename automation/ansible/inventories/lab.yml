@@ -1,3 +1,4 @@
+  #aqui definim els routers de mikrotik perque ansible els reconegui.
 all:
   children:
     vbox:

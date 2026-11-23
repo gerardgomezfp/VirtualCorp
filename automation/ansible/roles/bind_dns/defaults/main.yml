@@ -1,4 +1,9 @@
 ---
+# Variables per defecte del rol bind_dns: centralitzen el nom del servei, paquets,
+# paràmetres d'arrencada, seguretat/reenviament, valors SOA i totes les zones
+# autoritàries de la Delegació 8 per generar la configuració de BIND9 sense repetir dades.
+
+# Nom de la unitat systemd a Debian (named) i paquets necessaris per al servidor i eines dig/nslookup
 bind_service_name: "named"
 bind_packages:
   - bind9
@@ -6,10 +11,12 @@ bind_packages:
   - bind9-dnsutils
 
 # Resolvedor temporal per instal·lar paquets abans que BIND9 estigui configurat
+# i domini de cerca per defecte durant l'arrencada inicial
 bind_bootstrap_resolver: "8.8.8.8"
 bind_search_domain: "virtualcorp.local"
 
 # Adreces d'escolta i reenviadors del servidor DNS (dns01 -> 10.8.0.138)
+# S'escolta a loopback i a la IP de dns01; els dominis externs es reenvien a 8.8.8.8
 bind_listen_ipv4:
   - "127.0.0.1"
   - "10.8.0.138"
@@ -17,6 +24,8 @@ bind_forwarders:
   - "8.8.8.8"
 
 # Xarxes internes permeses per a consultes recursives (sense obrir a Internet)
+# Inclou el loopback, les subxarxes de la Delegació 8 (plantes, DMZ, servidors/direcció)
+# i 10.8.10.0/24 per als hosts de treball/proves interns
 bind_allowed_clients:
   - "localhost"
   - "10.8.0.0/25"
@@ -28,6 +37,7 @@ bind_allowed_clients:
   - "10.8.10.0/24"
 
 # Paràmetres SOA per defecte per a les zones locals de la Delegació 8
+# Controlen el TTL base, el número de sèrie d'edició, els temporitzadors de zona i el contacte SOA
 bind_zone_default_ttl: 3600
 bind_zone_serial: 2026112201
 bind_zone_refresh: 3600
@@ -39,6 +49,7 @@ bind_zone_admin_email: "admin.delegacion8.lan."
 
 # Zones autoritàries i registres A segons l'adreçament de la Delegació 8
 bind_zones:
+  # Zona orientada a serveis web/publicats (websrv a la DMZ, 10.8.0.197)
   - name: "delegacion8.com"
     file: "/etc/bind/zones/db.delegacion8.com"
     records:
@@ -46,6 +57,7 @@ bind_zones:
       - { name: "ns1", type: "A", value: "10.8.0.138" }
       - { name: "websrv", type: "A", value: "10.8.0.197" }
 
+  # Zona principal interna amb servidors de dades, intranet, DHCP/DNS i serveis de DMZ
   - name: "delegacion8.lan"
     file: "/etc/bind/zones/db.delegacion8.lan"
     records:
@@ -60,6 +72,7 @@ bind_zones:
       - { name: "coresrv", type: "A", value: "10.8.0.198" }
       - { name: "streamingsrv", type: "A", value: "10.8.0.199" }
 
+  # Subzona de la Planta 00 (10.8.0.0/25): impressora i equips d'exposició/consergeria
   - name: "planta00.delegacion8.lan"
     file: "/etc/bind/zones/db.planta00.delegacion8.lan"
     records:
@@ -74,6 +87,7 @@ bind_zones:
       - { name: "conserge1", type: "A", value: "10.8.0.37" }
       - { name: "conserge2", type: "A", value: "10.8.0.38" }
 
+  # Subzona de la Planta 01 (10.8.1.0/24): impressora, serveis web/dades i desenvolupament
   - name: "planta01.delegacion8.lan"
     file: "/etc/bind/zones/db.planta01.delegacion8.lan"
     records:
@@ -87,6 +101,7 @@ bind_zones:
       - { name: "data-p2", type: "A", value: "10.8.1.13" }
       - { name: "dev1", type: "A", value: "10.8.1.30" }
 
+  # Subzona de la Planta 02 (10.8.2.0/24): impressora, serveis web/dades i desenvolupament
   - name: "planta02.delegacion8.lan"
     file: "/etc/bind/zones/db.planta02.delegacion8.lan"
     records:
@@ -98,6 +113,7 @@ bind_zones:
       - { name: "data-p3", type: "A", value: "10.8.2.11" }
       - { name: "dev2", type: "A", value: "10.8.2.30" }
 
+  # Subzona de la Planta 03 i Direcció (10.8.3.0/24): impressora, portàtils i equips directius
   - name: "planta03.delegacion8.lan"
     file: "/etc/bind/zones/db.planta03.delegacion8.lan"
     records:

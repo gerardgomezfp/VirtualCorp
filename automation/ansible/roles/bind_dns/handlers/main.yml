@@ -1,6 +1,9 @@
-# --- En roles/bind_dns/handlers/main.yml ---
 ---
+# Handler del rol bind_dns: només s'executa si alguna tasca prèvia reporta un canvi
+# (per exemple, en actualitzar opcions globals, declaració de zones o fitxers de zona).
 - name: Recarregar BIND9
   ansible.builtin.systemd:
+    # Nom del servei parametritzat (per exemple, named a Debian) per mantenir el rol reutilitzable
     name: "{{ bind_service_name }}"
+    # Recarrega la configuració i les zones en calent sense tallar el procés si la sintaxi és vàlida
     state: reloaded

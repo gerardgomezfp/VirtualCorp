@@ -1,6 +1,8 @@
 ---
-# IP deseada de los servicios Terraform con interfaz DHCP (reserva en Kea).
-# No es una IP estática del contenedor: Kea la entrega por MAC.
+# Assignació d'IP desitjada per als serveis gestionats per Terraform amb interfície DHCP.
+# Aquest valor NO configura una IP estàtica directament al contenidor: Kea DHCPv4 l'entrega
+# per reserva associada a l'adreça MAC obtinguda de l'inventari dinàmic de Terraform.
 terraform_service_ip_assignments:
+  # Contenidor LXC del servidor DNS (BIND9) de la Delegació 8 a la xarxa privada (10.8.0.128/26)
   - hostname: dns01
     ip_address: 10.8.0.138

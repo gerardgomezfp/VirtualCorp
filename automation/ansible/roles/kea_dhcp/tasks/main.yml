@@ -1,4 +1,7 @@
 ---
+# Tasques principals del rol kea_dhcp per instal·lar, configurar i validar el servidor
+# Kea DHCPv4 (dhcp01 -> 10.8.0.137/26) integrant les reserves dels serveis gestionats per Terraform.
+
 # 1. Recollir els fets dels serveis del sistema per comprovar l'estat abans d'instal·lar
 - name: Comprovar l'estat dels serveis abans d'instal·lar
   ansible.builtin.service_facts:
@@ -12,11 +15,15 @@
   when: "'kea-dhcp4-server.service' not in ansible_facts.services"
 
 # 3. Renderitzar i validar la configuració JSON de Kea abans d'escriure-la al destí
-- name: Inicializar la lista de servicios Terraform con reserva DHCP
+# Inicialitza la llista acumuladora on es recolliran les dades normalitzades de cada servei LXC
+- name: Inicialitzar la llista de serveis Terraform amb reserva DHCP
   ansible.builtin.set_fact:
     kea_terraform_services: []
 
-- name: Resolver MAC, red e IP de cada servicio Terraform
+# Resol MAC (en minúscules per coherència amb Kea), xarxa i IP per a cada host del grup terraform_services:
+# si té vcorp_ipv4_cidr (IP estàtica de Terraform, com dhcp01), l'extreu; si no (com dns01), la busca
+# a terraform_service_ip_assignments per reservar-la per DHCP
+- name: Resoldre MAC, xarxa i IP de cada servei Terraform
   ansible.builtin.set_fact:
     kea_terraform_services: >-
       {{ kea_terraform_services + [{
@@ -33,19 +40,22 @@
       }] }}
   loop: "{{ groups['terraform_services'] }}"
 
-- name: Validar MAC, red e IP única de los servicios Terraform
+# Comprova abans de generar el fitxer que cada servei tingui MAC, una xarxa mapejada i exactament una IP
+- name: Validar MAC, xarxa i IP única dels serveis Terraform
   ansible.builtin.assert:
     that:
       - item.mac | length > 0
       - item.network in kea_network_subnet_ids
       - item.ips | length == 1
-    fail_msg: "{{ item.name }} necesita MAC, una red conocida y exactamente una IP."
+    fail_msg: "{{ item.name }} necessita MAC, una xarxa coneguda i exactament una IP."
     quiet: true
   loop: "{{ kea_terraform_services }}"
   loop_control:
     label: "{{ item.name }}"
 
-- name: Añadir las reservas de los servicios Terraform a sus subredes
+# Fusiona les reserves dinàmiques dels serveis Terraform dins de la subxarxa corresponent
+# (per exemple, la xarxa "privada" -> subnet_id 1) mantenint les reserves existents
+- name: Afegir les reserves dels serveis Terraform a les seves subxarxes
   ansible.builtin.set_fact:
     kea_dhcp4_subnets_effective: >-
       {%- set out = [] -%}
@@ -58,6 +68,8 @@
       {%- endfor -%}
       {{ out }}
 
+# Escriu /etc/kea/kea-dhcp4.conf només si kea-dhcp4 -t valida la sintaxi JSON i la configuració
+# abans de reemplaçar el fitxer final, i notifica el handler per reiniciar si hi ha canvis
 - name: Generar la configuració de Kea DHCPv4 (validada abans d'escriure)
   ansible.builtin.template:
     src: kea-dhcp4.conf.j2
