@@ -1,29 +1,40 @@
-  #aqui definim els routers de mikrotik perque ansible els reconegui.
+# Inventari d'Ansible per gestionar l'entorn de VirtualBox (routers MikroTik)
+# i els servidors/contenidors d'infraestructura associats (com ara dhcp01).
+# Aquí definim els routers de MikroTik perquè Ansible els reconegui.
 all:
   children:
+    # Grup que agrupa la gestió local sobre VirtualBox mitjançant VBoxManage
     vbox:
       hosts:
+        # S'executa localment a la màquina on corre Ansible (no per SSH remot)
         localhost:
           ansible_connection: local
+          # Binari CLI de VirtualBox utilitzat per controlar les màquines virtuals
           vboxmanage_bin: VBoxManage
+          # Llista de noms de màquines/routers MikroTik gestionats en aquest entorn
           mikrotik_routers:
             - mikrotik0
             - mikrotik1
             - mikrotik2
             - mikrotik3
 
-    # Aqui definim com ansible podra entrar al router0 de vcorp, amb el seu port, clau privada i usuari
+    # Aquí definim com Ansible podrà entrar al router de VCorp (mikrotik0),
+    # amb el seu nom/adreça, port SSH, clau privada, usuari i connexió RouterOS.
     mikrotik:
       hosts:
         mikrotik0:
           ansible_host: mikrotik-vcorp
+          # Port SSH personalitzat (2200 en lloc del 22 per defecte)
           ansible_port: 2200
           ansible_user: sysadmin
           ansible_ssh_private_key_file: ~/.ssh/vcorp_sysadmin
+          # Connexió específica per a dispositius de xarxa en lloc de shell Linux estàndard
           ansible_connection: ansible.netcommon.network_cli
+          # Família del sistema operatiu de xarxa per utilitzar mòduls de RouterOS
           ansible_network_os: community.routeros.routeros
 
-    # Aqui definim com ansible podra entrar al contenido dhcp01, amb la seva ip, clau privada i usuari root.
+    # Aquí definim com Ansible podrà entrar al contenidor dhcp01,
+    # amb la seva IP assignada, clau privada SSH i usuari root.
     dhcp_servers:
       hosts:
         dhcp01:

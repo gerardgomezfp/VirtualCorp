@@ -1,4 +1,4 @@
-# 2026-11-07 16:02:30 by RouterOS 7.21.4
+# 2026-11-19 08:32:22 by RouterOS 7.21.4
 # system id = jsgjU4NZRjG
 #
 /interface ethernet
@@ -11,10 +11,8 @@ set [ find default-name=ether6 ] disable-running-check=no name=ether8
 /routing rip instance
 add name=rip1 redistribute=connected,rip
 /ip address
-add address=10.8.0.226/30 comment="Enlace R0-R1" interface=ether2 network=\
-    10.8.0.224
-add address=10.8.0.229/30 comment="Enlace R1-R2" interface=ether3 network=\
-    10.8.0.228
+add address=10.8.0.226/30 comment="Enlace R0-R1" interface=ether2 network=10.8.0.224
+add address=10.8.0.229/30 comment="Enlace R1-R2" interface=ether3 network=10.8.0.228
 /ip dhcp-client
 # Interface not active
 add interface=*2
