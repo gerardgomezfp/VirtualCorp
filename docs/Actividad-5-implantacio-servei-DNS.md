@@ -1,5 +1,9 @@
 # Memoria Técnica: Despliegue de `dns01` y Servicio DNS (BIND9) en la Delegación 8
 
+Alumno: Gerard Gómez
+Curso: ASIX2 26-27
+Actividad: Activitat 5 — despliegue del DNS y DNS Inverso
+
 > **Contexto del entorno:** Documentación técnica en castellano elaborada a partir del trabajo realizado en el repositorio (`VirtualCorp-student`) sobre el direccionamiento de la **Delegación 8** (`10.8.0.0/16`), manteniendo la coherencia con las variables, plantillas y tareas de Terraform y Ansible (`bind_dns` y `kea_dhcp`), donde `dhcp01` corresponde a `.137` y `dns01` corresponde a `.138`.
 
 ## 2. Añadir un contenedor LXC a Terraform
