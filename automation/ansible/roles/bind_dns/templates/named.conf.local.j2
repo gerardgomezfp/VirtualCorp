@@ -1,8 +1,17 @@
-// Declaració de zones autoritàries locals per a la Delegació 8
+// Declaració de zones autoritàries directes per a la Delegació 8 (nom -> IP)
 {% for zone in bind_zones %}
 zone "{{ zone.name }}" {
     type master;
     file "{{ zone.file }}";
+    allow-transfer { none; };
+};
+
+{% endfor %}
+// Declaració de zones autoritàries inverses (PTR) per a la Delegació 8 (IP -> nom)
+{% for rzone in bind_reverse_zones | default([]) %}
+zone "{{ rzone.name }}" {
+    type master;
+    file "{{ rzone.file }}";
     allow-transfer { none; };
 };
 

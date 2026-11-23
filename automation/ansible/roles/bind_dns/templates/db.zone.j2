@@ -1,4 +1,20 @@
 $TTL {{ bind_zone_default_ttl }}
+{% if item.records is defined and item.records | selectattr('ptr', 'defined') | list | length > 0 %}
+@   IN  SOA ns1.delegacion8.lan. {{ bind_zone_admin_email }} (
+        {{ bind_zone_serial }} ; Serial
+        {{ bind_zone_refresh }}      ; Refresh
+        {{ bind_zone_retry }}       ; Retry
+        {{ bind_zone_expire }}    ; Expire
+        {{ bind_zone_negative_ttl }} )     ; Negative Cache TTL
+
+; Registre NS de la zona inversa
+@   IN  NS  ns1.delegacion8.lan.
+
+; Registres PTR (IP -> nom canònic)
+{% for rec in item.records %}
+{{ "%-14s" | format(rec.ptr) }} IN  PTR  {{ rec.fqdn }}
+{% endfor %}
+{% else %}
 @   IN  SOA {{ bind_zone_ns_name }}.{{ item.name }}. {{ bind_zone_admin_email }} (
         {{ bind_zone_serial }} ; Serial
         {{ bind_zone_refresh }}      ; Refresh
@@ -13,3 +29,4 @@ $TTL {{ bind_zone_default_ttl }}
 {% for rec in item.records %}
 {{ "%-14s" | format(rec.name) }} IN  {{ "%-4s" | format(rec.type) }} {{ rec.value }}
 {% endfor %}
+{% endif %}
