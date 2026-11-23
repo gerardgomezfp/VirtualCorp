@@ -81,7 +81,7 @@ Siguiendo las recomendaciones del *BIND 9 Administrator Reference Manual* y la o
   * Gestiona variables en `defaults/main.yml`, plantillas en `templates/`, tareas en `tasks/main.yml` y *handlers* (como recargar `named`).
   * Valida configuración y zonas antes de aplicar/recargar y asegura que el servicio `named` esté habilitado y activo sin impactar otros servicios.
 
-## 🌐 4. Requisits de nombres y zones
+##  4. Requisits de nombres y zones
 
 BIND9 actúa como servidor autoritativo para las zonas de la **Delegación 8** manteniendo alineados el plan de direccionamiento, las reservas DHCP y los registros DNS:
 
