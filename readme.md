@@ -1,3 +1,4 @@
+
 # VirtualCorp
 
 VirtualCorp is a virtual networking lab for designing and deploying a branch office network. It uses MikroTik RouterOS CHR virtual machines on VirtualBox and automates their setup with shell scripts and Make.
@@ -12,4 +13,5 @@ Pots consultar les memòries tècniques i el desenvolupament complet de cada fas
 - **Activitat 2:** [Memòria Tècnica de Desplegament (Delegació 8)](./docs/memoria-tecnica-desplegament-vcorp.md)
 - **Activitat 3:** [Automatització VPN WireGuard i Split Tunneling](./docs/Actividad-3-wireguard-y-ansible.md)
 - **Activitat 4:** [Kea DHCP i Terraform](./docs/Actividad-4-kea-DHCP-Terraform.md)
+- **Activitat 5:** [Implantació del Servei DNS (BIND9)](./docs/Actividad-5-implantacio-servei-DNS.md)
 ---
