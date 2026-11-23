@@ -1,4 +1,4 @@
-# 2026-11-07 16:02:54 by RouterOS 7.21.4
+# 2026-11-19 08:34:22 by RouterOS 7.21.4
 # system id = vD043zh4h+E
 #
 /interface ethernet
@@ -14,11 +14,13 @@ add name=rip1 redistribute=connected,rip
 /ip address
 add address=10.8.3.1/25 interface=ether3 network=10.8.3.0
 add address=10.8.3.129/25 interface=ether4 network=10.8.3.128
-add address=10.8.0.234/30 comment="Enlace R2-R3" interface=ether2 network=\
-    10.8.0.232
+add address=10.8.0.234/30 comment="Enlace R2-R3" interface=ether2 network=10.8.0.232
 /ip dhcp-client
 # Interface not active
 add interface=*2
+/ip dhcp-relay
+add dhcp-server=10.8.0.137 disabled=no interface=ether3 local-address=10.8.3.1 name=vcorp-planta03
+add dhcp-server=10.8.0.137 disabled=no interface=ether4 local-address=10.8.3.129 name=vcorp-direccio
 /ip route
 add dst-address=0.0.0.0/0 gateway=10.8.0.233
 /routing rip interface-template

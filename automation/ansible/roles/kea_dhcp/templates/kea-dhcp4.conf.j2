@@ -11,7 +11,7 @@
         [{"name": "domain-name", "data": kea_domain_name | default("virtualcorp.local")}]
         + ([{"name": "domain-name-servers", "data": kea_dns_servers | join(", ")}] if kea_dns_servers | length > 0 else [])
       ),
-      "subnet4": kea_dhcp4_subnets
+      "subnet4": kea_dhcp4_subnets_effective | default(kea_dhcp4_subnets)
     }
   } | to_nice_json
 }}

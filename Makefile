@@ -59,3 +59,8 @@ deploy_equipment:
 deploy_dhcp:
 	cd "$(PROJECT_ROOT)/infrastructure/terraform/proxmox" && terraform init -input=false && terraform apply -input=false -auto-approve -var-file=terraform.local.tfvars
 	cd "$(PROJECT_ROOT)/automation/ansible" && ansible-playbook playbooks/dhcp.yml && ansible-playbook playbooks/dhcp_relay.yml
+
+# Desplegament DNS: contenidor dns01 + inventari (Terraform), reserves DHCP i BIND9 (Ansible)
+deploy_dns:
+	cd "$(PROJECT_ROOT)/infrastructure/terraform/proxmox" && terraform init -input=false && terraform apply -input=false -auto-approve -var-file=terraform.local.tfvars
+	cd "$(PROJECT_ROOT)/automation/ansible" && ansible-playbook playbooks/dhcp.yml && ansible-playbook playbooks/dns.yml	

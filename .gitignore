@@ -215,3 +215,6 @@ terraform.local.tfvars
 terraform.tfstate
 .terraform/
 
+
+# Inventario generado por Terraform (artefacto local)
+automation/ansible/inventories/proxmox_lxc.yml

@@ -1,5 +1,9 @@
 # Actividad: Despliegue de DHCP Centralizado (Kea DHCPv4) y DHCP Relays en RouterOS — Delegación 8
 
+Alumno: Gerard Gómez
+Curso: ASIX2 26-27
+Actividad: Activitat 4 — Terraform y despliegue DHCP
+
 Este documento recoge de manera exhaustiva el diseño, la arquitectura de Infraestructura como Código (IaC), la automatización con Ansible, las decisiones técnicas de direccionamiento y las pruebas de validación ejecutadas para el despliegue del servicio DHCP centralizado y los relays DHCP de la **Delegación 8** de **VirtualCorp**. Siguiendo los principios de IaC, el aprovisionamiento del contenedor `dhcp01` en Proxmox se gestiona con Terraform (`bpg/proxmox`), mientras que la configuración del servidor Kea DHCPv4 y de los relays en RouterOS se automatiza de forma modular, reproducible e idempotente mediante Ansible y se orquesta con `make deploy_dhcp`.
 
 ## Índice

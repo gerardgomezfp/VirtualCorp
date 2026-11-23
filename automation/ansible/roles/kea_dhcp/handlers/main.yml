@@ -1,5 +1,9 @@
 ---
+# Handler del rol kea_dhcp: s'executa només si alguna tasca notifica un canvi
+# (per exemple, en actualitzar /etc/kea/kea-dhcp4.conf després de validar-lo).
 - name: Reiniciar Kea DHCPv4
   ansible.builtin.systemd:
+    # Unitat systemd del dimoni DHCPv4 de Kea a dhcp01
     name: kea-dhcp4-server
+    # Reinicia el servei perquè apliqui la nova configuració validada
     state: restarted

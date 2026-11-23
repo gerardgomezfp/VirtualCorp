@@ -1,0 +1,119 @@
+---
+# Tasques principals del rol bind_dns per desplegar i validar el servidor DNS (BIND9)
+# a dns01 dins de la Delegació 8 de VirtualCorp.
+
+# Consulta els paquets ja instal·lats al sistema per saber si BIND9 ja existeix abans d'aplicar l'arrencada temporal
+- name: Recopilar els paquets instal·lats
+  ansible.builtin.package_facts:
+    manager: apt
+
+# Fixa un resolvedor temporal a dhclient.conf només abans d'instal·lar BIND9,
+# assegurant resolució externa durant la descàrrega de paquets apt si el DHCP encara apunta a dns01
+- name: Fixar un resolvedor temporal en dhclient (només abans d'instal·lar BIND9)
+  ansible.builtin.lineinfile:
+    path: /etc/dhcp/dhclient.conf
+    regexp: '^supersede domain-name-servers'
+    line: "supersede domain-name-servers {{ bind_bootstrap_resolver }};"
+  when: "'bind9' not in ansible_facts.packages"
+
+# Aplica immediatament el resolvedor temporal i el domini de cerca a /etc/resolv.conf
+# només mentre bind9 encara no està instal·lat, evitant esperar una renovació de lease DHCP
+- name: Aplicar ara el resolvedor temporal a resolv.conf (només abans d'instal·lar BIND9)
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    content: |
+      domain {{ bind_search_domain }}
+      search {{ bind_search_domain }}
+      nameserver {{ bind_bootstrap_resolver }}
+    mode: "0644"
+  when: "'bind9' not in ansible_facts.packages"
+
+# Instal·la el paquet del servidor BIND9 i les utilitats associades actualitzant la llista de paquets d'APT
+- name: Instal·lar BIND9 i les seves utilitats
+  ansible.builtin.apt:
+    name: "{{ bind_packages }}"
+    state: present
+    update_cache: true
+
+# Habilita l'arrencada automàtica del servei BIND9 amb el sistema i s'assegura que està actiu
+- name: Habilitar i iniciar el servei BIND9
+  ansible.builtin.systemd:
+    name: "{{ bind_service_name }}"
+    enabled: true
+    state: started
+
+# Crea el directori dedicat als fitxers de zona amb propietat del grup bind i permisos 0750
+- name: Crear el directori per als fitxers de zona de BIND9
+  ansible.builtin.file:
+    path: /etc/bind/zones
+    state: directory
+    owner: root
+    group: bind
+    mode: "0750"
+
+# Desplega la configuració global (ACL de clients, reenviadors i DNSSEC) i notifica el handler per recarregar
+- name: Desplegar les opcions globals de BIND9
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recarregar BIND9
+
+# Desplega la declaració de les zones autoritàries locals de la Delegació 8
+- name: Desplegar la declaració de zones locals de BIND9
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recarregar BIND9
+
+# Genera cada fitxer de zona (delegacion8.com, delegacion8.lan i plantes 00..03) a partir de la plantilla
+- name: Desplegar els fitxers de zona de la Delegació 8
+  ansible.builtin.template:
+    src: db.zone.j2
+    dest: "{{ item.file }}"
+    owner: root
+    group: bind
+    mode: "0644"
+  loop: "{{ bind_zones }}"
+  notify: Recarregar BIND9
+
+# Valida la sintaxi global de BIND9 (changed_when: false per no alterar la idempotència del playbook)
+- name: Validar la sintaxi global de BIND9 amb named-checkconf
+  ansible.builtin.command:
+    cmd: named-checkconf
+  changed_when: false
+
+# Valida cada fitxer de zona individualment per detectar errors de sintaxi o registres abans d'acabar
+- name: Validar cada fitxer de zona amb named-checkzone
+  ansible.builtin.command:
+    cmd: "named-checkzone {{ item.name }} {{ item.file }}"
+  loop: "{{ bind_zones }}"
+  changed_when: false
+
+
+# Genera els fitxers de zona inversa (db.*.in-addr.arpa) a partir de la plantilla
+# avaluant cada entrada de bind_reverse_zones (si no està definida, llista buida)
+- name: Desplegar els fitxers de zona inversa (PTR) de la Delegació 8
+  ansible.builtin.template:
+    src: db.zone.j2
+    dest: "{{ item.file }}"
+    # El propietari és root i el grup bind amb mode 0644 perquè el dimoni named pugui llegir les zones
+    owner: root
+    group: bind
+    mode: "0644"
+  loop: "{{ bind_reverse_zones | default([]) }}"
+  # Si es modifica o crea algun fitxer de zona, dispara el handler per recarregar BIND9
+  notify: Recarregar BIND9
+
+# Comprova la sintaxi i coherència de cada fitxer de zona inversa carregat
+- name: Validar cada fitxer de zona inversa amb named-checkzone
+  ansible.builtin.command:
+    cmd: "named-checkzone {{ item.name }} {{ item.file }}"
+  loop: "{{ bind_reverse_zones | default([]) }}"
+  # És una comprovació de només lectura, no modifica l'estat del sistema
+  changed_when: false

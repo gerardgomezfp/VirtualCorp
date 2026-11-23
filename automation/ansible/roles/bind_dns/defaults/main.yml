@@ -1,0 +1,183 @@
+---
+# Variables per defecte del rol bind_dns: centralitzen el nom del servei, paquets,
+# paràmetres d'arrencada, seguretat/reenviament, valors SOA i totes les zones
+# autoritàries de la Delegació 8 per generar la configuració de BIND9 sense repetir dades.
+
+# Nom de la unitat systemd a Debian (named) i paquets necessaris per al servidor i eines dig/nslookup
+bind_service_name: "named"
+bind_packages:
+  - bind9
+  - bind9-utils
+  - bind9-dnsutils
+
+# Resolvedor temporal per instal·lar paquets abans que BIND9 estigui configurat
+# i domini de cerca per defecte durant l'arrencada inicial
+bind_bootstrap_resolver: "8.8.8.8"
+bind_search_domain: "virtualcorp.local"
+
+# Adreces d'escolta i reenviadors del servidor DNS (dns01 -> 10.8.0.138)
+# S'escolta a loopback i a la IP de dns01; els dominis externs es reenvien a 8.8.8.8
+bind_listen_ipv4:
+  - "127.0.0.1"
+  - "10.8.0.138"
+bind_forwarders:
+  - "8.8.8.8"
+
+# Xarxes internes permeses per a consultes recursives (sense obrir a Internet)
+# Inclou el loopback, les subxarxes de la Delegació 8 (plantes, DMZ, servidors/direcció)
+# i 10.8.10.0/24 per als hosts de treball/proves interns
+bind_allowed_clients:
+  - "localhost"
+  - "10.8.0.0/25"
+  - "10.8.0.128/26"
+  - "10.8.0.192/27"
+  - "10.8.1.0/24"
+  - "10.8.2.0/24"
+  - "10.8.3.0/24"
+  - "10.8.10.0/24"
+
+# Paràmetres SOA per defecte per a les zones locals de la Delegació 8
+# Controlen el TTL base, el número de sèrie d'edició, els temporitzadors de zona i el contacte SOA
+bind_zone_default_ttl: 3600
+bind_zone_serial: 2026112301
+bind_zone_refresh: 3600
+bind_zone_retry: 900
+bind_zone_expire: 604800
+bind_zone_negative_ttl: 300
+bind_zone_ns_name: "ns1"
+bind_zone_admin_email: "admin.delegacion8.lan."
+
+# Zones autoritàries i registres A segons l'adreçament de la Delegació 8
+bind_zones:
+  # Zona orientada a serveis web/publicats (websrv a la DMZ, 10.8.0.197)
+  - name: "delegacion8.com"
+    file: "/etc/bind/zones/db.delegacion8.com"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.197" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "websrv", type: "A", value: "10.8.0.197" }
+
+  # Zona principal interna amb servidors de dades, intranet, DHCP/DNS i serveis de DMZ
+  - name: "delegacion8.lan"
+    file: "/etc/bind/zones/db.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "dns01", type: "A", value: "10.8.0.138" }
+      - { name: "dhcp01", type: "A", value: "10.8.0.137" }
+      - { name: "dbsrv", type: "A", value: "10.8.0.134" }
+      - { name: "infosrv", type: "A", value: "10.8.0.135" }
+      - { name: "intrasrv", type: "A", value: "10.8.0.136" }
+      - { name: "websrv", type: "A", value: "10.8.0.197" }
+      - { name: "coresrv", type: "A", value: "10.8.0.198" }
+      - { name: "streamingsrv", type: "A", value: "10.8.0.199" }
+
+  # Subzona de la Planta 00 (10.8.0.0/25): impressora i equips d'exposició/consergeria
+  - name: "planta00.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta00.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.0.65" }
+      - { name: "printer0", type: "A", value: "10.8.0.65" }
+      - { name: "expo1", type: "A", value: "10.8.0.33" }
+      - { name: "expo2", type: "A", value: "10.8.0.34" }
+      - { name: "expo3", type: "A", value: "10.8.0.35" }
+      - { name: "expo4", type: "A", value: "10.8.0.36" }
+      - { name: "conserge1", type: "A", value: "10.8.0.37" }
+      - { name: "conserge2", type: "A", value: "10.8.0.38" }
+
+  # Subzona de la Planta 01 (10.8.1.0/24): impressora, serveis web/dades i desenvolupament
+  - name: "planta01.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta01.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.1.65" }
+      - { name: "printer1", type: "A", value: "10.8.1.65" }
+      - { name: "web-p1", type: "A", value: "10.8.1.10" }
+      - { name: "data-p1", type: "A", value: "10.8.1.11" }
+      - { name: "web-p2", type: "A", value: "10.8.1.12" }
+      - { name: "data-p2", type: "A", value: "10.8.1.13" }
+      - { name: "dev1", type: "A", value: "10.8.1.30" }
+
+  # Subzona de la Planta 02 (10.8.2.0/24): impressora, serveis web/dades i desenvolupament
+  - name: "planta02.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta02.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.2.65" }
+      - { name: "printer2", type: "A", value: "10.8.2.65" }
+      - { name: "web-p3", type: "A", value: "10.8.2.10" }
+      - { name: "data-p3", type: "A", value: "10.8.2.11" }
+      - { name: "dev2", type: "A", value: "10.8.2.30" }
+
+  # Subzona de la Planta 03 i Direcció (10.8.3.0/24): impressora, portàtils i equips directius
+  - name: "planta03.delegacion8.lan"
+    file: "/etc/bind/zones/db.planta03.delegacion8.lan"
+    records:
+      - { name: "@", type: "A", value: "10.8.0.138" }
+      - { name: "ns1", type: "A", value: "10.8.0.138" }
+      - { name: "printer", type: "A", value: "10.8.3.65" }
+      - { name: "printer3", type: "A", value: "10.8.3.65" }
+      - { name: "laptop2", type: "A", value: "10.8.3.10" }
+      - { name: "laptop3", type: "A", value: "10.8.3.11" }
+      - { name: "directiu1", type: "A", value: "10.8.3.130" }
+      - { name: "directiu2", type: "A", value: "10.8.3.131" }
+      - { name: "directiu3", type: "A", value: "10.8.3.132" }
+
+# Zones inverses (PTR) per resoldre d'adreça IPv4 a nom (in-addr.arpa) a la Delegació 8.
+# Cada registre PTR associa l'últim octet dins del /24 (o la part restant de la IP)
+# amb el nom canònic complet (FQDN) acabat en punt.
+bind_reverse_zones:
+  # Zona inversa per a 10.8.0.0/24 (inclou 10.8.0.0/25 Planta 00, 10.8.0.128/26 Privada i 10.8.0.192/27 DMZ)
+  - name: "0.8.10.in-addr.arpa"
+    file: "/etc/bind/zones/db.0.8.10.in-addr.arpa"
+    records:
+      - { ptr: "33", fqdn: "expo1.planta00.delegacion8.lan." }
+      - { ptr: "34", fqdn: "expo2.planta00.delegacion8.lan." }
+      - { ptr: "35", fqdn: "expo3.planta00.delegacion8.lan." }
+      - { ptr: "36", fqdn: "expo4.planta00.delegacion8.lan." }
+      - { ptr: "37", fqdn: "conserge1.planta00.delegacion8.lan." }
+      - { ptr: "38", fqdn: "conserge2.planta00.delegacion8.lan." }
+      - { ptr: "65", fqdn: "printer0.planta00.delegacion8.lan." }
+      - { ptr: "134", fqdn: "dbsrv.delegacion8.lan." }
+      - { ptr: "135", fqdn: "infosrv.delegacion8.lan." }
+      - { ptr: "136", fqdn: "intrasrv.delegacion8.lan." }
+      - { ptr: "137", fqdn: "dhcp01.delegacion8.lan." }
+      - { ptr: "138", fqdn: "dns01.delegacion8.lan." }
+      - { ptr: "197", fqdn: "websrv.delegacion8.com." }
+      - { ptr: "198", fqdn: "coresrv.delegacion8.lan." }
+      - { ptr: "199", fqdn: "streamingsrv.delegacion8.lan." }
+
+  # Zona inversa per a 10.8.1.0/24 (Planta 01)
+  - name: "1.8.10.in-addr.arpa"
+    file: "/etc/bind/zones/db.1.8.10.in-addr.arpa"
+    records:
+      - { ptr: "10", fqdn: "web-p1.planta01.delegacion8.lan." }
+      - { ptr: "11", fqdn: "data-p1.planta01.delegacion8.lan." }
+      - { ptr: "12", fqdn: "web-p2.planta01.delegacion8.lan." }
+      - { ptr: "13", fqdn: "data-p2.planta01.delegacion8.lan." }
+      - { ptr: "30", fqdn: "dev1.planta01.delegacion8.lan." }
+      - { ptr: "65", fqdn: "printer1.planta01.delegacion8.lan." }
+
+  # Zona inversa per a 10.8.2.0/24 (Planta 02)
+  - name: "2.8.10.in-addr.arpa"
+    file: "/etc/bind/zones/db.2.8.10.in-addr.arpa"
+    records:
+      - { ptr: "10", fqdn: "web-p3.planta02.delegacion8.lan." }
+      - { ptr: "11", fqdn: "data-p3.planta02.delegacion8.lan." }
+      - { ptr: "30", fqdn: "dev2.planta02.delegacion8.lan." }
+      - { ptr: "65", fqdn: "printer2.planta02.delegacion8.lan." }
+
+  # Zona inversa per a 10.8.3.0/24 (Planta 03 i Direcció: 10.8.3.0/25 i 10.8.3.128/25)
+  - name: "3.8.10.in-addr.arpa"
+    file: "/etc/bind/zones/db.3.8.10.in-addr.arpa"
+    records:
+      - { ptr: "10", fqdn: "laptop2.planta03.delegacion8.lan." }
+      - { ptr: "11", fqdn: "laptop3.planta03.delegacion8.lan." }
+      - { ptr: "65", fqdn: "printer3.planta03.delegacion8.lan." }
+      - { ptr: "130", fqdn: "directiu1.planta03.delegacion8.lan." }
+      - { ptr: "131", fqdn: "directiu2.planta03.delegacion8.lan." }
+      - { ptr: "132", fqdn: "directiu3.planta03.delegacion8.lan." }     

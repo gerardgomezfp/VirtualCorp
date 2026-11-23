@@ -1,0 +1,14 @@
+---
+# Usuari d'administració utilitzat per Ansible per connectar-se via SSH als contenidors LXC
+ansible_user: root
+
+# Clau privada SSH dedicada per a l'automatització del laboratori (evita contrasenyes manuals)
+ansible_ssh_private_key_file: ~/.ssh/vcorp_sysadmin
+
+# Adreça IP d'administració per a hosts sense IP estàtica (com dns01): es resol dinàmicament
+# filtrant la llista terraform_service_ip_assignments pel nom del host actual (inventory_hostname).
+# En canvi, dhcp01 ja rep ansible_host directament des de l'inventari generat per Terraform.
+ansible_host: >-
+  {{ (terraform_service_ip_assignments
+      | selectattr('hostname', 'equalto', inventory_hostname)
+      | map(attribute='ip_address') | list | first) }}

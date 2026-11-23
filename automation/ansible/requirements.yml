@@ -1,5 +1,11 @@
 ---
+# Fitxer de requisits de col·leccions d'Ansible per al desplegament de xarxa i relays DHCP
+# (es pot instal·lar amb: ansible-galaxy collection install -r requirements.yml).
 collections:
+  # Col·lecció específica per gestionar dispositius MikroTik RouterOS (relays DHCP, etc.)
+  # amb una versió mínima >=3.10.0 per garantir compatibilitat de mòduls i paràmetres
   - name: community.routeros
     version: ">=3.10.0"
+
+  # Col·lecció comuna d'automatització de xarxa d'Ansible que aporta utilitats i connexions base
   - name: ansible.netcommon
